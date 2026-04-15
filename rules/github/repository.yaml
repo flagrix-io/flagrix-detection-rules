@@ -1,0 +1,490 @@
+version: "1.0"
+category: "github-repository"
+description: "YARA-style pattern rules for detecting malware and suspicious code in GitHub repositories"
+
+rules:
+  # ── Lazarus Group / BeaverTail ──────────────────────────────────────────────
+
+  - id: BEAVERTAIL_LOADER_V1
+    name: BeaverTail Loader Pattern
+    description: Matches BeaverTail malware loader pattern used by Lazarus Group in fake job interview repos
+    severity: critical
+    pattern:
+      type: regex
+      value: "require\\(['\"]child_process['\"]\\)\\.exec.*\\bhttp[s]?://"
+      file_extensions: [".js", ".ts", ".mjs", ".cjs"]
+    tags: [lazarus, beavertail, loader, apt]
+
+  - id: BEAVERTAIL_EXFIL
+    name: BeaverTail Data Exfiltration
+    description: Environment variable exfiltration pattern — process.env dumped via fetch/axios POST
+    severity: critical
+    pattern:
+      type: regex
+      value: "process\\.env.*JSON\\.stringify.*fetch|axios\\.post"
+      file_extensions: [".js", ".ts", ".mjs", ".cjs"]
+    tags: [lazarus, beavertail, exfiltration, apt]
+
+  # ── InvisibleFerret ──────────────────────────────────────────────────────────
+
+  - id: INVISIBLEFERRET_KEYLOG
+    name: InvisibleFerret Keylogger
+    description: Keylogger pattern using pynput — used by Lazarus Group's InvisibleFerret Python malware
+    severity: critical
+    pattern:
+      type: regex
+      value: "keyboard\\.on_press|pynput\\.keyboard|keylogger"
+      file_extensions: [".py"]
+    tags: [lazarus, invisibleferret, keylogger, apt]
+
+  # ── Generic Malware Patterns ─────────────────────────────────────────────────
+
+  - id: REVERSE_SHELL
+    name: Reverse Shell Pattern
+    description: Socket-based reverse shell connection — creates a TCP connection back to attacker
+    severity: critical
+    pattern:
+      type: regex
+      value: "\\bnet\\.Socket\\(\\)|socket\\.socket.*SOCK_STREAM.*connect"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [shell, backdoor, remote-access]
+
+  - id: CRYPTO_MINER
+    name: Cryptocurrency Miner
+    description: Cryptocurrency mining code — uses CPU resources for attacker profit
+    severity: high
+    pattern:
+      type: regex
+      value: "stratum\\+tcp://|xmrig|cryptonight|monero"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [miner, crypto, resource-abuse]
+
+  - id: CREDENTIAL_THEFT
+    name: Browser Credential Theft
+    description: Reads browser password databases (Chrome Login Data, Firefox logins.json, macOS Keychain)
+    severity: critical
+    pattern:
+      type: regex
+      value: "chrome.*Login Data|firefox.*logins\\.json|keychain"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [credentials, theft, stealer]
+
+  - id: ENV_EXFIL_WEBHOOK
+    name: Environment Variables to Webhook Exfiltration
+    description: Sends environment variables (secrets, API keys) to Discord/ntfy webhook
+    severity: high
+    pattern:
+      type: regex
+      value: "process\\.env.*discord\\.com/api/webhooks|os\\.environ.*webhook.*post|process\\.env.*ntfy\\.sh"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [exfiltration, webhook, secrets]
+
+  - id: DISCORD_WEBHOOK_EXFIL
+    name: Discord Webhook Data Exfiltration
+    description: Sends sensitive data (env vars, credentials) to Discord webhook endpoint
+    severity: high
+    pattern:
+      type: regex
+      value: "discord\\.com/api/webhooks.*process\\.env|discord\\.com/api/webhooks.*os\\.environ"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [exfiltration, discord, webhook]
+
+  - id: OBFUSCATED_EVAL
+    name: Obfuscated Eval Execution
+    description: Base64-encoded eval execution — decodes and executes hidden payload
+    severity: high
+    pattern:
+      type: regex
+      value: "eval\\(atob\\(|eval\\(Buffer\\.from\\(.*base64"
+      file_extensions: [".js", ".ts", ".mjs"]
+    tags: [obfuscation, eval, payload]
+
+  # ── Obfuscation Patterns ─────────────────────────────────────────────────────
+
+  - id: OBFUSCATED_CODE_BASE64
+    name: Heavy Base64 Encoding
+    description: >
+      Excessive Base64-encoded strings (6+ strings of 50+ chars). Commonly used to
+      hide malicious payloads, URLs, or commands from code reviewers.
+    severity: medium
+    pattern:
+      type: base64-density
+      min_string_length: 50
+      min_occurrences: 6
+      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+    tags: [obfuscation, base64]
+
+  - id: OBFUSCATED_CODE_HEX
+    name: Extensive Hex-Encoded Strings
+    description: >
+      20+ hex escape sequences (\xNN). Used to hide malicious string content
+      from static analysis and code review.
+    severity: medium
+    pattern:
+      type: hex-density
+      min_occurrences: 20
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [obfuscation, hex-encoding]
+
+  - id: OBFUSCATED_CODE_EVAL_DYNAMIC
+    name: Dynamic Code Execution
+    description: eval(), new Function(), or setTimeout/setInterval with string argument — executes arbitrary dynamic code
+    severity: high
+    pattern:
+      type: regex
+      value: "eval\\s*\\([^)]{0,200}\\)|new\\s+Function\\s*\\([^)]{0,200}\\)|setTimeout\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]|setInterval\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]"
+      file_extensions: [".js", ".ts", ".mjs"]
+    tags: [obfuscation, eval, dynamic-code]
+
+  - id: HIDDEN_CODE_LONG_LINE
+    name: Extremely Long Line (Hidden Code Attack)
+    description: >
+      Lines over 5000 characters — attackers hide malicious code thousands of characters
+      to the right of visible code, past the edge of code editors.
+    severity: high
+    pattern:
+      type: line-length
+      threshold: 5000
+      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1", ".bat", ".cmd"]
+    tags: [obfuscation, hidden-code, long-line]
+
+  - id: HIDDEN_CODE_LONG_LINE_CRITICAL
+    name: Extremely Long Line with Malicious Patterns
+    description: >
+      Lines over 5000 characters containing suspicious patterns (eval, exec, fetch,
+      child_process, atob). High confidence that malicious code is intentionally hidden.
+    severity: critical
+    pattern:
+      type: long-line-with-patterns
+      threshold: 5000
+      suspicious_patterns:
+        - "eval\\s*\\("
+        - "exec\\s*\\("
+        - "fetch\\s*\\("
+        - "XMLHttpRequest"
+        - "child_process"
+        - "atob\\s*\\("
+        - "fromCharCode"
+        - "\\.innerHTML\\s*="
+        - "window\\.location\\s*="
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [obfuscation, hidden-code, long-line, critical]
+
+  # ── Hardcoded Secrets ────────────────────────────────────────────────────────
+
+  - id: HARDCODED_AWS_KEY
+    name: Hardcoded AWS Access Key
+    description: AWS Access Key ID pattern (AKIA...) committed to source code
+    severity: critical
+    pattern:
+      type: regex
+      value: "AKIA[0-9A-Z]{16}"
+      file_extensions: [".js", ".ts", ".py", ".sh", ".env", ".json", ".yaml", ".yml"]
+    tags: [secrets, aws, credentials]
+
+  - id: HARDCODED_GITHUB_TOKEN
+    name: Hardcoded GitHub Token
+    description: GitHub Personal Access Token (ghp_) or OAuth token (gho_) in source code
+    severity: critical
+    pattern:
+      type: regex
+      value: "ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}"
+      file_extensions: [".js", ".ts", ".py", ".sh", ".yaml", ".yml"]
+    tags: [secrets, github, credentials]
+
+  - id: HARDCODED_STRIPE_KEY
+    name: Hardcoded Stripe Live Key
+    description: Stripe live secret key pattern in source code
+    severity: critical
+    pattern:
+      type: regex
+      value: "sk_live_[a-zA-Z0-9]{24,}"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [secrets, stripe, credentials]
+
+  - id: HARDCODED_API_KEY
+    name: Hardcoded API Key
+    description: Generic API key / secret key pattern assigned to a variable
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [secrets, credentials, api-key]
+
+  - id: HARDCODED_DB_CONNECTION
+    name: Hardcoded Database Connection String
+    description: MongoDB or PostgreSQL connection string with credentials embedded
+    severity: high
+    pattern:
+      type: regex
+      value: "(?:mongodb|mongo)[+:\\/\\/]{0,6}[^@\\s]+:[^@\\s]+@|postgres:\\/\\/[^@\\s]+:[^@\\s]+@"
+      file_extensions: [".js", ".ts", ".py", ".env"]
+    tags: [secrets, database, credentials]
+
+  # ── Network Communication ────────────────────────────────────────────────────
+
+  - id: NETWORK_DISCORD_WEBHOOK
+    name: Discord Webhook URL
+    description: Hardcoded Discord webhook URL — frequently used for data exfiltration
+    severity: critical
+    pattern:
+      type: regex
+      value: "https?:\\/\\/discord(?:app)?\\.com\\/api\\/webhooks\\/\\d+\\/[a-zA-Z0-9_-]+"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, discord, exfiltration]
+
+  - id: NETWORK_TELEGRAM_TOKEN
+    name: Telegram Bot Token
+    description: Hardcoded Telegram bot token — used for covert command & control
+    severity: high
+    pattern:
+      type: regex
+      value: "\\d{8,10}:[a-zA-Z0-9_-]{35}"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, telegram, c2]
+
+  - id: NETWORK_PASTEBIN
+    name: Pastebin URL
+    description: Pastebin/hastebin URL — often used to host second-stage payloads
+    severity: medium
+    pattern:
+      type: regex
+      value: "(?:pastebin\\.com|hastebin\\.com|paste\\.ee)\\/[a-zA-Z0-9]+"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, pastebin, payload-hosting]
+
+  - id: NETWORK_URL_SHORTENER
+    name: URL Shortener in Code
+    description: Shortened URLs (bit.ly, tinyurl) in source code — obfuscates actual destination
+    severity: medium
+    pattern:
+      type: regex
+      value: "(?:bit\\.ly|tinyurl\\.com|t\\.co)\\/[a-zA-Z0-9]+"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, url-shortener, obfuscation]
+
+  - id: NETWORK_SUSPICIOUS_TLD
+    name: Suspicious Domain TLD
+    description: URLs using free/anonymous TLDs (.tk, .ml, .ga, .cf, .gq, .onion, .xyz) — associated with malware hosting
+    severity: high
+    pattern:
+      type: regex
+      value: "https?:\\/\\/[a-zA-Z0-9-]+\\.(?:tk|ml|ga|cf|gq|onion|xyz)(?:\\/|$)"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, suspicious-domain, malware-hosting]
+
+  - id: NETWORK_NGROK_TUNNEL
+    name: Ngrok Tunnel URL
+    description: Ngrok tunnel URL in code — used to expose local servers, often for C2
+    severity: medium
+    pattern:
+      type: regex
+      value: "https?:\\/\\/[a-zA-Z0-9-]+\\.ngrok\\.io"
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    tags: [network, ngrok, c2]
+
+  # ── Data Exfiltration ────────────────────────────────────────────────────────
+
+  - id: EXFIL_CLIPBOARD
+    name: Clipboard Access
+    description: Reads clipboard content — can steal copied passwords, 2FA codes, crypto addresses
+    severity: high
+    pattern:
+      type: regex
+      value: "navigator\\.clipboard\\.read(?:Text)?\\s*\\("
+      file_extensions: [".js", ".ts"]
+    tags: [exfiltration, clipboard, data-theft]
+
+  - id: EXFIL_COOKIE
+    name: Cookie Access
+    description: Reads browser cookies via document.cookie — can steal session tokens
+    severity: high
+    pattern:
+      type: regex
+      value: "document\\.cookie"
+      file_extensions: [".js", ".ts"]
+    tags: [exfiltration, cookies, session-theft]
+
+  - id: EXFIL_KEYLOGGER
+    name: Keylogger Pattern
+    description: Keyboard event listener (keydown/keypress) — captures user keystrokes
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:addEventListener|on)\\s*\\(\\s*['\"](?:keydown|keypress|keyup)['\"]"
+      file_extensions: [".js", ".ts"]
+    tags: [exfiltration, keylogger, credential-theft]
+
+  # ── Backdoors ────────────────────────────────────────────────────────────────
+
+  - id: BACKDOOR_RCE_ENDPOINT
+    name: Remote Code Execution Endpoint
+    description: eval() or exec() fed from HTTP request body/query — allows attacker to run arbitrary code
+    severity: critical
+    pattern:
+      type: regex
+      value: "eval\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)|exec\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [backdoor, rce, critical]
+
+  - id: BACKDOOR_DYNAMIC_REQUIRE
+    name: Dynamic Require from Request
+    description: require() fed from HTTP request — allows attacker to load arbitrary modules
+    severity: critical
+    pattern:
+      type: regex
+      value: "require\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)"
+      file_extensions: [".js", ".ts"]
+    tags: [backdoor, rce, dynamic-require]
+
+  - id: BACKDOOR_HARDCODED_AUTH
+    name: Hardcoded Auth Bypass
+    description: Hardcoded password check — always-true backdoor condition in auth logic
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:password|auth)\\s*(?:===?|==)\\s*['\"][^'\"]{0,20}['\"]\\s*\\)"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [backdoor, auth-bypass, hardcoded]
+
+  # ── Suspicious File Access ───────────────────────────────────────────────────
+
+  - id: FILE_ACCESS_CREDENTIALS
+    name: SSH/AWS Credentials File Access
+    description: Reads ~/.ssh/, ~/.aws/, id_rsa, or credentials files — credential theft
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:\\.ssh|\\.aws|\\.gnupg|\\.docker|id_rsa|credentials)"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [file-access, credentials, ssh, aws]
+
+  - id: FILE_ACCESS_SYSTEM
+    name: System File Access
+    description: Reads /etc/passwd, /etc/shadow, or shell history files
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:etc\\/passwd|etc\\/shadow|\\.bash_history|\\.zsh_history)"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [file-access, system-files, privilege-escalation]
+
+  - id: FILE_ACCESS_BROWSER_DATA
+    name: Browser Password Database Access
+    description: Reads Chrome/Firefox/Safari password databases
+    severity: critical
+    pattern:
+      type: regex
+      value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:Chrome|Firefox|Safari|Edge)[\\w\\s\\/\\\\]*(?:Cookies|Login|History)"
+      file_extensions: [".js", ".ts", ".py"]
+    tags: [file-access, browser-data, credential-theft]
+
+  # ── Supply Chain ─────────────────────────────────────────────────────────────
+
+  - id: SUPPLY_CHAIN_INSTALL_DOWNLOAD
+    name: Install Script Downloads Executable
+    description: postinstall/preinstall script downloads executable files — classic supply chain attack vector
+    severity: critical
+    pattern:
+      type: script-content
+      script_names: [postinstall, preinstall, install]
+      value: "(?:curl|wget|fetch)[\\s\\S]*\\.(?:exe|sh|py|bin|dmg|pkg|msi|dll)"
+      file_name: "package.json"
+    tags: [supply-chain, postinstall, download, executable]
+
+  - id: SUPPLY_CHAIN_INSTALL_NETWORK
+    name: Install Script Makes Network Requests
+    description: postinstall script fetches URLs — can download second-stage payloads post-install
+    severity: high
+    pattern:
+      type: script-content
+      script_names: [postinstall, preinstall, install]
+      value: "(?:curl|wget|fetch|http|https)"
+      file_name: "package.json"
+    tags: [supply-chain, postinstall, network]
+
+  # ── Code Integrity ───────────────────────────────────────────────────────────
+
+  - id: CODE_INTEGRITY_MINIFIED
+    name: Minified Code in Source Repository
+    description: >
+      Non-.min.js file contains minified code (long lines, high short-variable density).
+      Legitimate projects commit readable source. This makes auditing impossible.
+    severity: medium
+    pattern:
+      type: minification-heuristic
+      max_avg_line_length: 200
+      min_long_lines: 3
+      long_line_threshold: 500
+      min_short_var_ratio: 0.3
+      file_extensions: [".js", ".ts"]
+      exclude_patterns: ["*.min.js", "*.min.ts"]
+    tags: [code-integrity, minified, obfuscation]
+
+  # ── Social Engineering ───────────────────────────────────────────────────────
+
+  - id: SOCIAL_ENGINEERING_SECURITY_BYPASS
+    name: Security Bypass Instructions in README
+    description: README instructs users to disable antivirus, firewall, or security tools
+    severity: high
+    pattern:
+      type: regex
+      value: "(?:disable|turn off|bypass)[\\s\\w]*(?:antivirus|firewall|security|protection)"
+      file_names: ["README.md", "README.txt", "README"]
+    tags: [social-engineering, security-bypass]
+
+  - id: SOCIAL_ENGINEERING_URGENCY
+    name: Urgency Language in README
+    description: README uses urgency tactics to pressure users into running code without review
+    severity: medium
+    pattern:
+      type: readme-multi-pattern
+      min_matches: 2
+      patterns:
+        - "(?:urgent|immediately|quick|fast|act now|limited time)"
+        - "(?:disable|turn off|bypass)[\\s\\w]*(?:antivirus|firewall|security)"
+        - "(?:admin|root|sudo)[\\s\\w]*(?:rights|privileges|access|permission)"
+        - "(?:100%|totally|completely|absolutely)[\\s\\w]*(?:safe|secure|trusted|legit)"
+        - "(?:millions?|thousands?)[\\s\\w]*(?:downloads?|users?|stars?)"
+      file_names: ["README.md", "README.txt", "README"]
+    tags: [social-engineering, urgency, manipulation]
+
+  # ── Suspicious Package Names ─────────────────────────────────────────────────
+
+  - id: PACKAGE_NAME_RANDOM
+    name: Random-Looking Package Name
+    description: Dependency with a random-character name (no vowels, 6-8 chars) — hallmark of throwaway malware packages
+    severity: medium
+    pattern:
+      type: package-name
+      regex: "^[a-z0-9]{6,8}$"
+      anti_pattern: "[aeiou]{2}"
+      file_name: "package.json"
+    tags: [supply-chain, suspicious-name, malware]
+
+  - id: PACKAGE_NAME_SUSPICIOUS_KEYWORD
+    name: Suspicious Keyword in Package Name
+    description: Dependency name contains hack/backdoor/shell/payload keywords
+    severity: medium
+    pattern:
+      type: package-name
+      regex: "(test|temp|tmp|debug|hack|crack|backdoor|shell|payload)[_-]?[0-9]*$"
+      file_name: "package.json"
+    tags: [supply-chain, suspicious-name, malware]
+
+  # ── Non-English Comments ─────────────────────────────────────────────────────
+
+  - id: NON_ENGLISH_COMMENTS
+    name: Non-English Code Comments
+    description: >
+      Over 5% of code comments are in a non-English language. Attackers from state-sponsored
+      groups (Lazarus, APT groups) often write internal comments in their native language,
+      hiding intent from Western code reviewers.
+    severity: medium
+    pattern:
+      type: language-detection
+      threshold_percentage: 5
+      min_words: 10
+      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+    tags: [social-engineering, non-english, lazarus, obfuscation]

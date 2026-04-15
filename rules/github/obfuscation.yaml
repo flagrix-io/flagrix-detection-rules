@@ -1,0 +1,138 @@
+version: "1.0"
+category: "github-obfuscation"
+description: "Patterns specifically targeting code obfuscation techniques used to hide malicious payloads"
+
+rules:
+  - id: OBF_BASE64_HEAVY
+    name: Heavy Base64 Encoding
+    description: >
+      6+ base64 strings of 50+ chars in a single file. Base64 is a legitimate encoding,
+      but excessive use in source code is a red flag — it's the most common way to hide
+      malicious payloads, C2 URLs, and commands from static analysis.
+    severity: medium
+    pattern:
+      type: regex
+      value: "[A-Za-z0-9+/]{50,}={0,2}"
+      min_matches: 6
+      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+    skip_test_files: true
+    tags: [base64, obfuscation]
+
+  - id: OBF_HEX_STRINGS
+    name: Extensive Hex-Encoded Strings
+    description: >
+      20+ hex escape sequences (\xNN) in a single file. Hex encoding hides the actual
+      string content from developers, often used to conceal URLs, commands, or shellcode.
+    severity: medium
+    pattern:
+      type: regex
+      value: "\\\\x[0-9a-fA-F]{2}"
+      min_matches: 20
+      file_extensions: [".js", ".ts", ".py"]
+    skip_test_files: true
+    tags: [hex-encoding, obfuscation]
+
+  - id: OBF_EVAL
+    name: eval() Usage
+    description: >
+      eval() executes arbitrary dynamic code. While there are legitimate uses, eval()
+      is the #1 technique for executing hidden malicious payloads.
+    severity: high
+    pattern:
+      type: regex
+      value: "eval\\s*\\([^)]{0,200}\\)"
+      file_extensions: [".js", ".ts", ".mjs"]
+    skip_test_files: true
+    tags: [eval, dynamic-code, obfuscation]
+
+  - id: OBF_NEW_FUNCTION
+    name: new Function() Constructor
+    description: >
+      new Function() creates and executes dynamic code similar to eval(). Used to
+      hide malicious logic that bypasses some static analysis tools.
+    severity: high
+    pattern:
+      type: regex
+      value: "new\\s+Function\\s*\\([^)]{0,200}\\)"
+      file_extensions: [".js", ".ts"]
+    skip_test_files: true
+    tags: [function-constructor, dynamic-code, obfuscation]
+
+  - id: OBF_SETTIMEOUT_STRING
+    name: setTimeout/setInterval with String Argument
+    description: >
+      Passing a string to setTimeout/setInterval executes it as code (like eval).
+      A common obfuscation technique: setTimeout("maliciousCode()", 0)
+    severity: high
+    pattern:
+      type: regex
+      value: "(?:setTimeout|setInterval)\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]"
+      file_extensions: [".js", ".ts"]
+    skip_test_files: true
+    tags: [eval, dynamic-code, obfuscation]
+
+  - id: OBF_LONG_LINE
+    name: Suspiciously Long Line
+    description: >
+      Lines over 5000 characters. Normal source code lines are under 120 chars.
+      Attackers put malicious code thousands of characters to the right of a comment
+      or visible code, past the visible area of most code editors.
+    severity: high
+    pattern:
+      type: line-length
+      threshold: 5000
+      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1", ".bat", ".cmd"]
+    skip_test_files: true
+    tags: [long-line, hidden-code, obfuscation]
+
+  - id: OBF_LONG_LINE_CRITICAL
+    name: Long Line with Suspicious Patterns
+    description: >
+      Lines over 5000 characters that also contain eval, exec, fetch, XMLHttpRequest,
+      child_process, atob, or fromCharCode. This is a critical indicator that malicious
+      code is intentionally hidden at the end of a long line.
+    severity: critical
+    pattern:
+      type: long-line-with-patterns
+      threshold: 5000
+      suspicious_patterns:
+        - "eval\\s*\\("
+        - "exec\\s*\\("
+        - "fetch\\s*\\("
+        - "XMLHttpRequest"
+        - "child_process"
+        - "require\\s*\\(\\s*['\"]fs['\"]\\)"
+        - "atob\\s*\\("
+        - "fromCharCode"
+        - "document\\.write\\s*\\("
+        - "\\.innerHTML\\s*="
+        - "window\\.location\\s*="
+      file_extensions: [".js", ".ts", ".py", ".sh"]
+    skip_test_files: true
+    tags: [long-line, hidden-code, obfuscation, critical]
+
+  - id: OBF_FROMCHARCODE
+    name: String.fromCharCode Obfuscation
+    description: >
+      Constructs strings from char codes (e.g., String.fromCharCode(101,118,97,108) = "eval").
+      Classic technique to hide malicious keywords from simple string scanning.
+    severity: medium
+    pattern:
+      type: regex
+      value: "(?:String\\.fromCharCode|fromCharCode)\\s*\\([\\d\\s,]+\\)"
+      file_extensions: [".js", ".ts"]
+    skip_test_files: true
+    tags: [fromcharcode, obfuscation, eval-bypass]
+
+  - id: OBF_CHARCODE_ARRAY
+    name: Large Character Code Array
+    description: >
+      Array of 20+ numbers that look like char codes. Used as an alternative to
+      fromCharCode to build malicious strings character by character.
+    severity: medium
+    pattern:
+      type: regex
+      value: "\\[(?:\\s*\\d{2,3}\\s*,\\s*){20,}\\d{2,3}\\s*\\]"
+      file_extensions: [".js", ".ts"]
+    skip_test_files: true
+    tags: [charcode-array, obfuscation]

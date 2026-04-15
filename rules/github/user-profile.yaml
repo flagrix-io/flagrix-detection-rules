@@ -1,0 +1,203 @@
+version: "1.0"
+category: "github-user-profile"
+description: "Risk scoring weights for GitHub user profile analysis. Positive weights add risk, negative weights reduce risk (trust signals)."
+
+risk_factors:
+  # ── High-Risk Indicators ─────────────────────────────────────────────────────
+
+  - id: VERY_NEW_ACCOUNT
+    name: Very New Account
+    description: Account created less than 30 days ago — common with throwaway scam accounts
+    weight: 0.30
+    condition:
+      type: account_age_days
+      operator: lt
+      value: 30
+    tags: [account-age, new-account, scam]
+
+  - id: NEW_ACCOUNT
+    name: New Account
+    description: Account created less than 90 days ago — elevated risk, especially for job-related outreach
+    weight: 0.20
+    condition:
+      type: account_age_days
+      operator: lt
+      value: 90
+    exclusive_with: VERY_NEW_ACCOUNT
+    tags: [account-age, new-account]
+
+  - id: NO_REPOS
+    name: No Public Repositories
+    description: Account has zero public repositories — unusual for a developer reaching out about code
+    weight: 0.25
+    condition:
+      type: owned_repos_count
+      operator: eq
+      value: 0
+    tags: [no-activity, suspicious]
+
+  - id: SINGLE_REPO_CONTRIBUTOR
+    name: Single Repository Only
+    description: Account has exactly 1 repository — possible throwaway account created for a single scam campaign
+    weight: 0.15
+    condition:
+      type: owned_repos_count
+      operator: eq
+      value: 1
+    exclusive_with: NO_REPOS
+    tags: [low-activity, throwaway]
+
+  - id: NO_FOLLOWERS
+    name: Zero Followers
+    description: Account has no followers — no social proof of legitimacy
+    weight: 0.20
+    condition:
+      type: followers
+      operator: eq
+      value: 0
+    tags: [no-social-proof, suspicious]
+
+  - id: HIGH_FOLLOWING_RATIO
+    name: High Following-to-Follower Ratio
+    description: >
+      Following many accounts but has very few followers (ratio > 10, following > 10).
+      Classic bot/spam account pattern — follows many hoping to get follow-backs.
+    weight: 0.20
+    condition:
+      type: compound
+      conditions:
+        - type: follower_following_ratio
+          operator: gt
+          value: 10
+        - type: following
+          operator: gt
+          value: 10
+    tags: [bot-pattern, suspicious, spam]
+
+  - id: NO_PROFILE_PHOTO
+    name: Default Avatar
+    description: Using GitHub's default avatar (no custom photo uploaded)
+    weight: 0.15
+    condition:
+      type: has_profile_photo
+      operator: eq
+      value: false
+    tags: [incomplete-profile, suspicious]
+
+  - id: INCOMPLETE_PROFILE
+    name: Incomplete Profile
+    description: Missing bio, display name, or location — common with quickly-created scam accounts
+    weight: 0.10
+    condition:
+      type: is_profile_complete
+      operator: eq
+      value: false
+    tags: [incomplete-profile]
+
+  - id: NO_RECENT_ACTIVITY
+    name: No Recent Activity
+    description: No public events in the last 90 days — account may be dormant or recently activated
+    weight: 0.15
+    condition:
+      type: recent_event_count_90d
+      operator: eq
+      value: 0
+    tags: [inactive, suspicious]
+
+trust_signals:
+  # ── Trust Signals (negative weights reduce risk score) ───────────────────────
+
+  - id: VERY_ESTABLISHED
+    name: Very Established Account
+    description: Account is 3+ years old — substantial track record
+    weight: -0.25
+    condition:
+      type: account_age_days
+      operator: gte
+      value: 1095
+    tags: [established, trusted]
+
+  - id: ESTABLISHED_ACCOUNT
+    name: Established Account
+    description: Account is 1+ year old
+    weight: -0.15
+    condition:
+      type: account_age_days
+      operator: gte
+      value: 365
+    exclusive_with: VERY_ESTABLISHED
+    tags: [established]
+
+  - id: POPULAR_DEVELOPER
+    name: Popular Developer
+    description: 200+ followers — significant community recognition
+    weight: -0.25
+    condition:
+      type: followers
+      operator: gte
+      value: 200
+    tags: [popular, trusted]
+
+  - id: STRONG_FOLLOWER_BASE
+    name: Strong Follower Base
+    description: 50+ followers
+    weight: -0.15
+    condition:
+      type: followers
+      operator: gte
+      value: 50
+    exclusive_with: POPULAR_DEVELOPER
+    tags: [social-proof]
+
+  - id: PROLIFIC_DEVELOPER
+    name: Prolific Developer
+    description: 50+ owned repositories — demonstrates sustained development activity
+    weight: -0.30
+    condition:
+      type: owned_repos_count
+      operator: gte
+      value: 50
+    tags: [prolific, trusted]
+
+  - id: ACTIVE_CONTRIBUTOR
+    name: Active Contributor
+    description: 10+ repositories
+    weight: -0.20
+    condition:
+      type: owned_repos_count
+      operator: gte
+      value: 10
+    exclusive_with: PROLIFIC_DEVELOPER
+    tags: [active, contributor]
+
+  - id: HAS_POPULAR_REPOS
+    name: Has Popular Repositories
+    description: Repos have accumulated 50+ total stars — community validated work
+    weight: -0.20
+    condition:
+      type: total_stars
+      operator: gte
+      value: 50
+    tags: [popular-repos, trusted]
+
+  - id: CONSISTENT_ACTIVITY
+    name: Consistent Recent Activity
+    description: Has public events in the last 30 days — actively using the account
+    weight: -0.15
+    condition:
+      type: very_recent_event_count_30d
+      operator: gt
+      value: 0
+    tags: [active, consistent]
+
+risk_levels:
+  low:
+    max_score: 0.40
+    recommendation: "Profile appears legitimate. Standard caution advised for any collaboration requests."
+  medium:
+    min_score: 0.40
+    max_score: 0.70
+    recommendation: "Moderate risk. Review profile carefully. Check repository quality and recent activity before accepting collaboration."
+  high:
+    min_score: 0.70
+    recommendation: "High risk profile. Exercise extreme caution. Verify identity through other channels before trusting any collaboration requests."

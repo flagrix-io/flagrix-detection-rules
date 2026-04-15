@@ -1,0 +1,212 @@
+version: "1.0"
+category: "pdf-malicious"
+description: "Patterns for detecting malicious content in PDF documents"
+
+rules:
+  # ── JavaScript / Auto-Actions ────────────────────────────────────────────────
+
+  - id: PDF_EMBEDDED_JS
+    name: Embedded JavaScript
+    description: PDF contains /JavaScript or /JS PDF object — can execute code when opened
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/JavaScript\\s|\\/JS\\s*\\("
+    tags: [pdf-javascript, auto-execution]
+
+  - id: PDF_OPENACTION
+    name: Auto-Open Action
+    description: PDF contains /OpenAction — executes code automatically when document is opened
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/OpenAction"
+    tags: [auto-action, auto-execution]
+
+  - id: PDF_ADDITIONAL_ACTIONS
+    name: Additional Actions (AA)
+    description: PDF contains /AA (Additional Actions) — triggers actions on page open/close/print
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/AA\\s"
+    tags: [auto-action, auto-execution]
+
+  - id: PDF_LAUNCH_ACTION
+    name: Launch Action
+    description: PDF contains /Launch — can execute external programs
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/Launch"
+    tags: [launch-action, code-execution]
+
+  - id: PDF_SUBMIT_FORM
+    name: Form Submit Action
+    description: PDF contains /SubmitForm — can silently exfiltrate form data to a remote server
+    severity: high
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/SubmitForm"
+    tags: [form-submission, data-exfiltration]
+
+  - id: PDF_IMPORT_DATA
+    name: Import Data Action
+    description: PDF contains /ImportData — imports data from external URL
+    severity: high
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/ImportData"
+    tags: [data-import, remote-url]
+
+  - id: PDF_APP_LAUNCH_URL
+    name: app.launchURL JavaScript Call
+    description: JavaScript call to open external URL without user confirmation
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "app\\.launchURL"
+    tags: [javascript, url-launch, auto-action]
+
+  - id: PDF_EXPORT_DATA_OBJECT
+    name: exportDataObject JavaScript Call
+    description: JavaScript that exports/exfiltrates embedded file data
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "this\\.exportDataObject"
+    tags: [javascript, data-exfiltration]
+
+  - id: PDF_EVAL
+    name: eval() in PDF JavaScript
+    description: Dynamic code execution inside PDF JavaScript context
+    severity: critical
+    pattern:
+      type: pdf-raw-regex
+      value: "eval\\s*\\("
+    tags: [javascript, eval, dynamic-code]
+
+  # ── Embedded Files ───────────────────────────────────────────────────────────
+
+  - id: PDF_EMBEDDED_FILE
+    name: Embedded File Attachment
+    description: PDF contains embedded files or attachments — can hide executable payloads
+    severity: high
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/EmbeddedFile|\\/Filespec"
+    tags: [embedded-file, payload]
+
+  # ── Encoding / Obfuscation ────────────────────────────────────────────────────
+
+  - id: PDF_HEAVY_ENCODING
+    name: Heavily Encoded Content
+    description: >
+      80%+ of PDF streams are encoded (FlateDecode, ASCIIHexDecode, etc.).
+      Legitimate PDFs typically have modest encoding. Heavy encoding often
+      hides malicious content from scanners.
+    severity: medium
+    pattern:
+      type: encoding-density
+      threshold_ratio: 0.80
+      min_streams: 5
+    tags: [encoding, obfuscation]
+
+  # ── Interactive Forms ────────────────────────────────────────────────────────
+
+  - id: PDF_ACROFORM
+    name: Interactive Form Fields (AcroForm)
+    description: PDF contains interactive form fields — may submit data to external servers
+    severity: medium
+    pattern:
+      type: pdf-raw-regex
+      value: "\\/AcroForm"
+    tags: [form, data-collection]
+
+  # ── Suspicious URLs ──────────────────────────────────────────────────────────
+
+  - id: PDF_SUSPICIOUS_URL_BITLY
+    name: Bit.ly URL Shortener in PDF
+    description: Shortened URL in PDF link — hides actual destination
+    severity: high
+    pattern:
+      type: annotation-url-regex
+      value: "bit\\.ly"
+    tags: [url-shortener, obfuscation, suspicious-url]
+
+  - id: PDF_SUSPICIOUS_URL_DISCORD
+    name: Discord Link in PDF
+    description: Discord link in PDF — often used for social engineering in job scam PDFs
+    severity: high
+    pattern:
+      type: annotation-url-regex
+      value: "discord\\.gg"
+    tags: [discord, social-engineering, suspicious-url]
+
+  - id: PDF_SUSPICIOUS_URL_TELEGRAM
+    name: Telegram Link in PDF
+    description: Telegram link in PDF — common in recruitment scam documents
+    severity: high
+    pattern:
+      type: annotation-url-regex
+      value: "telegram\\.me"
+    tags: [telegram, social-engineering, suspicious-url]
+
+  - id: PDF_SUSPICIOUS_URL_NGROK
+    name: Ngrok URL in PDF
+    description: Ngrok tunnel URL in PDF — used to host temporary phishing/malware pages
+    severity: high
+    pattern:
+      type: annotation-url-regex
+      value: "ngrok\\.io"
+    tags: [ngrok, suspicious-url]
+
+  - id: PDF_SUSPICIOUS_URL_PASTEBIN
+    name: Pastebin Raw URL in PDF
+    description: Pastebin raw content URL — often hosts second-stage scripts
+    severity: high
+    pattern:
+      type: annotation-url-regex
+      value: "pastebin\\.com\\/raw"
+    tags: [pastebin, payload-hosting, suspicious-url]
+
+  - id: PDF_EXECUTABLE_LINK
+    name: Link to Executable File
+    description: PDF contains a link to an executable file (.exe, .bat, .ps1, .sh, etc.)
+    severity: critical
+    pattern:
+      type: annotation-url-regex
+      value: "\\.(exe|bat|cmd|ps1|sh|msi|dll|scr|com|vbs|wsf)$"
+    tags: [executable, malware-download, critical]
+
+  - id: PDF_GITHUB_RAW_EXECUTABLE
+    name: GitHub Raw Executable Download Link
+    description: Link to raw GitHub content for an executable file
+    severity: critical
+    pattern:
+      type: annotation-url-regex
+      value: "raw\\.githubusercontent\\.com.*\\.(exe|bat|ps1|sh|cmd)"
+    tags: [github-raw, executable, download]
+
+  # ── Annotation JavaScript ─────────────────────────────────────────────────────
+
+  - id: PDF_ANNOTATION_JS
+    name: JavaScript in PDF Annotation
+    description: PDF annotation action contains JavaScript, eval, or exec
+    severity: critical
+    pattern:
+      type: annotation-action-regex
+      value: "javascript|eval|exec"
+    tags: [javascript, annotation, auto-execution]
+
+  # ── Metadata ─────────────────────────────────────────────────────────────────
+
+  - id: PDF_MALWARE_TOOL
+    name: PDF Created with Malware Tool
+    description: PDF Producer/Creator metadata reveals known exploit frameworks (msfvenom, Metasploit, Cobalt Strike, Veil)
+    severity: critical
+    pattern:
+      type: metadata-regex
+      fields: [Producer, Creator]
+      value: "msfvenom|metasploit|cobaltstrike|veil"
+    tags: [metadata, exploit-framework, malware-tool]

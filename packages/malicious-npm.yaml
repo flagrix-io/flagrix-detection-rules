@@ -1,0 +1,113 @@
+version: "1.0"
+category: "malicious-npm-packages"
+description: "Known malicious npm packages. All entries are confirmed malicious — do not add packages based on suspicion alone."
+last_updated: "2025-01-26"
+
+packages:
+  # ── Lazarus Group / BeaverTail / InvisibleFerret ──────────────────────────────
+
+  - name: beavertail
+    severity: critical
+    source: lazarus
+    cve: ~
+    description: North Korean Lazarus Group malware loader — targets developers via fake job interviews
+    added: "2024-12-01"
+    references:
+      - https://unit42.paloaltonetworks.com/threat-assessment-north-korean-threat-groups/
+
+  - name: invisible-ferret
+    severity: critical
+    source: lazarus
+    description: Python-based data exfiltration malware from Lazarus Group — steals browser data, files, SSH keys
+    added: "2024-12-01"
+
+  - name: call-bind-apply-helpers
+    severity: critical
+    source: lazarus
+    description: Typosquat with BeaverTail malware payload — mimics legitimate npm utility
+    added: "2024-12-01"
+
+  - name: cors-parser
+    severity: critical
+    source: lazarus
+    description: Fake CORS parsing package with backdoor — distributed via fake LinkedIn job offers
+    added: "2024-12-01"
+
+  - name: helmet-async
+    severity: critical
+    source: lazarus
+    description: Typosquat of the legitimate 'helmet' security middleware — contains BeaverTail loader
+    added: "2024-12-01"
+    typosquat_of: helmet
+
+  # ── Common Typosquats ────────────────────────────────────────────────────────
+
+  - name: crossenv
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'cross-env' — published in 2017 npm typosquat attack, steals env vars
+    added: "2024-01-01"
+    typosquat_of: cross-env
+    references:
+      - https://blog.npmjs.org/post/163723642530/crossenv-malware-on-the-npm-registry
+
+  - name: lodahs
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'lodash'
+    added: "2024-01-01"
+    typosquat_of: lodash
+
+  - name: lodashs
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'lodash'
+    added: "2024-01-01"
+    typosquat_of: lodash
+
+  - name: electorn
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'electron' — commonly installed by developers
+    added: "2024-01-01"
+    typosquat_of: electron
+
+  - name: event-stream
+    severity: high
+    source: npm-audit
+    version: "3.3.6"
+    description: >
+      Compromised version of the popular event-stream package (v3.3.6) — contained
+      cryptocurrency wallet stealing payload targeting Copay Bitcoin wallet
+    added: "2018-11-26"
+    references:
+      - https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident
+
+  - name: flatmap-stream
+    severity: critical
+    source: npm-audit
+    description: Malicious dependency injected via compromised event-stream — contained the actual payload
+    added: "2018-11-26"
+    references:
+      - https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident
+
+  - name: bcrypts-js
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'bcrypt-js'
+    added: "2024-01-01"
+    typosquat_of: bcrypt-js
+
+  - name: mongose
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'mongoose'
+    added: "2024-01-01"
+    typosquat_of: mongoose
+
+  - name: expres
+    severity: high
+    source: npm-audit
+    description: Typosquat of 'express'
+    added: "2024-01-01"
+    typosquat_of: express

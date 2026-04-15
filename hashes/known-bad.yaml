@@ -1,0 +1,16 @@
+version: "1.0"
+category: "known-bad-hashes"
+description: >
+  SHA-256 hashes of known malicious files. All entries must be sourced from
+  public threat intelligence feeds or verified malware analysis.
+last_updated: "2025-01-26"
+
+hashes:
+  # Entries from threat intel feeds will be added here.
+  # Format:
+  # - sha256: "aabbcc...64hexchars"
+  #   type: pdf|js|binary|archive
+  #   malware_family: optional
+  #   source: virustotal|any.run|your-source
+  #   description: optional human-readable note
+  #   added: "YYYY-MM-DD"

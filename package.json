@@ -1,0 +1,23 @@
+{
+  "name": "@flagrix/detection-rules",
+  "version": "2025.01.26.001",
+  "description": "Community-maintained threat detection rules for Flagrix — identifying malicious code, scam patterns, and supply chain attacks",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flagrix/flagrix-detection-rules"
+  },
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "validate": "tsx scripts/validate.ts"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "ajv": "^8.17.1",
+    "js-yaml": "^4.1.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  },
+  "type": "module"
+}

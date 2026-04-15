@@ -1,0 +1,40 @@
+version: "1.0"
+category: "malicious-pypi-packages"
+description: "Known malicious PyPI (Python Package Index) packages"
+last_updated: "2025-01-26"
+
+packages:
+  - name: colourama
+    severity: high
+    source: pypi-audit
+    description: Typosquat of 'colorama' — steals clipboard content and cryptocurrency addresses
+    added: "2024-01-01"
+    typosquat_of: colorama
+
+  - name: python-dateutils
+    severity: high
+    source: pypi-audit
+    description: Typosquat of 'python-dateutil'
+    added: "2024-01-01"
+    typosquat_of: python-dateutil
+
+  - name: requesrs
+    severity: high
+    source: pypi-audit
+    description: Typosquat of 'requests'
+    added: "2024-01-01"
+    typosquat_of: requests
+
+  - name: setup-tools
+    severity: high
+    source: pypi-audit
+    description: Typosquat of 'setuptools' — commonly targets CI/CD environments
+    added: "2024-01-01"
+    typosquat_of: setuptools
+
+  - name: loguru-logger
+    severity: high
+    source: pypi-audit
+    description: Typosquat of 'loguru' — popular Python logging library
+    added: "2024-06-01"
+    typosquat_of: loguru
