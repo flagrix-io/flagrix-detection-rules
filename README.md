@@ -55,6 +55,10 @@ Contributions need:
 2. Tested against a real sample
 3. `npm run build && npm run validate` passes
 
+## AI Disclosure
+
+This project leverages Claude AI for boilerplate generation, test-suite expansion, and optimization. All AI-generated code is strictly reviewed, refactored, and verified by human maintainers before merging.
+
 ## License
 
 MIT — use freely in your own security tools. Attribution appreciated.
