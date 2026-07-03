@@ -168,10 +168,12 @@ function loadKnownBadHashes(): KnownBadHash[] {
 
 // ── Determine version ─────────────────────────────────────────────────────────
 
+// The release version is the single source of truth in package.json (format
+// YYYY.MM.DD.NNN). Deriving it here keeps signatures.json from ever drifting
+// out of sync with the package version. Bump package.json when publishing.
 function buildVersion(): string {
-  const now = new Date()
-  const date = now.toISOString().slice(0, 10).replace(/-/g, ".")
-  return `${date}.001`
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"))
+  return pkg.version as string
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

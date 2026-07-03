@@ -17,6 +17,10 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 | `packages/malicious-pypi.yaml` | Confirmed malicious PyPI packages |
 | `hashes/known-bad.yaml` | SHA-256 hashes of known malicious files |
 
+> **On file hashes:** Flagrix scanning is pattern-based (regex/YARA over source and
+> dependencies), not hash-based, so `knownBadHashes` is intentionally empty by
+> default. The field exists in the schema for consumers that want to add hash IOCs.
+
 ## Detection categories
 
 The repository covers **13+ detection categories**:
