@@ -9,10 +9,8 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 | Path | Contents |
 |------|----------|
 | `rules/github/repository.yaml` | YARA-style patterns: malware signatures, hardcoded secrets, backdoors, network exfiltration, social engineering |
-| `rules/github/user-profile.yaml` | Risk scoring weights for GitHub account analysis |
 | `rules/github/obfuscation.yaml` | Obfuscation technique detection (base64, hex, long lines, eval abuse) |
-| `rules/pdf/malicious.yaml` | PDF threat patterns (embedded JS, auto-actions, executable links) |
-| `rules/pdf/job-scam.yaml` | Social engineering text patterns in recruitment PDFs |
+| `rules/github/user-profile.yaml` | Risk scoring weights for GitHub account analysis |
 | `packages/malicious-npm.yaml` | Confirmed malicious npm packages (Lazarus Group, typosquats) |
 | `packages/malicious-pypi.yaml` | Confirmed malicious PyPI packages |
 | `hashes/known-bad.yaml` | SHA-256 hashes of known malicious files |
@@ -43,7 +41,7 @@ The repository covers **13+ detection categories**:
 
 The Flagrix extension fetches `signatures.json` from this repository every 6 hours. When you scan a GitHub repository or user profile, the extension matches your target against these rules locally in your browser — no data leaves your machine.
 
-The `signatures.json` is compiled from all YAML files by running:
+The `signatures.json` is compiled from the rule, package, and hash YAML files by running:
 
 ```bash
 npm install

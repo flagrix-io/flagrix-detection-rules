@@ -25,8 +25,6 @@ Thank you for helping keep developers safe!
 | Code pattern (regex) | `rules/github/repository.yaml` |
 | Obfuscation pattern | `rules/github/obfuscation.yaml` |
 | User profile risk factor | `rules/github/user-profile.yaml` |
-| PDF malicious pattern | `rules/pdf/malicious.yaml` |
-| Job scam PDF text pattern | `rules/pdf/job-scam.yaml` |
 | Malicious npm package | `packages/malicious-npm.yaml` |
 | Malicious PyPI package | `packages/malicious-pypi.yaml` |
 | Bad file hash | `hashes/known-bad.yaml` |
