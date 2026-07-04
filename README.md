@@ -10,7 +10,7 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 |------|----------|
 | `rules/github/repository.yaml` | YARA-style patterns: malware signatures, hardcoded secrets, backdoors, network exfiltration, social engineering |
 | `rules/github/obfuscation.yaml` | Obfuscation technique detection (base64, hex, long lines, eval abuse) |
-| `rules/github/user-profile.yaml` | Risk scoring weights for GitHub account analysis |
+| `rules/github/user-profile.yaml` | Risk scoring weights + thresholds for GitHub account analysis (compiled into `userProfileRules`, consumed live by the scanner) |
 | `packages/malicious-npm.yaml` | Confirmed malicious npm packages (Lazarus Group, typosquats) |
 | `packages/malicious-pypi.yaml` | Confirmed malicious PyPI packages |
 | `hashes/known-bad.yaml` | SHA-256 hashes of known malicious files |

@@ -7,7 +7,7 @@ risk_factors:
 
   - id: VERY_NEW_ACCOUNT
     name: Very New Account
-    description: Account created less than 30 days ago — common with throwaway scam accounts
+    description: "Account created {accountAgeDays} days ago (very new)"
     weight: 0.30
     condition:
       type: account_age_days
@@ -17,7 +17,7 @@ risk_factors:
 
   - id: NEW_ACCOUNT
     name: New Account
-    description: Account created less than 90 days ago — elevated risk, especially for job-related outreach
+    description: "Account created {accountAgeDays} days ago (new)"
     weight: 0.20
     condition:
       type: account_age_days
@@ -28,7 +28,7 @@ risk_factors:
 
   - id: NO_REPOS
     name: No Public Repositories
-    description: Account has zero public repositories — unusual for a developer reaching out about code
+    description: "No public repositories"
     weight: 0.25
     condition:
       type: owned_repos_count
@@ -38,7 +38,7 @@ risk_factors:
 
   - id: SINGLE_REPO_CONTRIBUTOR
     name: Single Repository Only
-    description: Account has exactly 1 repository — possible throwaway account created for a single scam campaign
+    description: "Only 1 repository (potential throwaway account)"
     weight: 0.15
     condition:
       type: owned_repos_count
@@ -49,7 +49,7 @@ risk_factors:
 
   - id: NO_FOLLOWERS
     name: Zero Followers
-    description: Account has no followers — no social proof of legitimacy
+    description: "Zero followers"
     weight: 0.20
     condition:
       type: followers
@@ -59,9 +59,7 @@ risk_factors:
 
   - id: HIGH_FOLLOWING_RATIO
     name: High Following-to-Follower Ratio
-    description: >
-      Following many accounts but has very few followers (ratio > 10, following > 10).
-      Classic bot/spam account pattern — follows many hoping to get follow-backs.
+    description: "Following {following} but only {followers} followers (bot pattern)"
     weight: 0.20
     condition:
       type: compound
@@ -76,7 +74,7 @@ risk_factors:
 
   - id: NO_PROFILE_PHOTO
     name: Default Avatar
-    description: Using GitHub's default avatar (no custom photo uploaded)
+    description: "Using default avatar"
     weight: 0.15
     condition:
       type: has_profile_photo
@@ -86,7 +84,7 @@ risk_factors:
 
   - id: INCOMPLETE_PROFILE
     name: Incomplete Profile
-    description: Missing bio, display name, or location — common with quickly-created scam accounts
+    description: "Missing bio, name, or location"
     weight: 0.10
     condition:
       type: is_profile_complete
@@ -96,7 +94,7 @@ risk_factors:
 
   - id: NO_RECENT_ACTIVITY
     name: No Recent Activity
-    description: No public events in the last 90 days — account may be dormant or recently activated
+    description: "No activity in last 90 days"
     weight: 0.15
     condition:
       type: recent_event_count_90d
@@ -109,7 +107,7 @@ trust_signals:
 
   - id: VERY_ESTABLISHED
     name: Very Established Account
-    description: Account is 3+ years old — substantial track record
+    description: "Account is {accountAgeDays} days old (very established)"
     weight: -0.25
     condition:
       type: account_age_days
@@ -119,7 +117,7 @@ trust_signals:
 
   - id: ESTABLISHED_ACCOUNT
     name: Established Account
-    description: Account is 1+ year old
+    description: "Account is {accountAgeDays} days old (established)"
     weight: -0.15
     condition:
       type: account_age_days
@@ -130,7 +128,7 @@ trust_signals:
 
   - id: POPULAR_DEVELOPER
     name: Popular Developer
-    description: 200+ followers — significant community recognition
+    description: "{followers} followers (popular developer)"
     weight: -0.25
     condition:
       type: followers
@@ -140,7 +138,7 @@ trust_signals:
 
   - id: STRONG_FOLLOWER_BASE
     name: Strong Follower Base
-    description: 50+ followers
+    description: "{followers} followers"
     weight: -0.15
     condition:
       type: followers
@@ -151,7 +149,7 @@ trust_signals:
 
   - id: PROLIFIC_DEVELOPER
     name: Prolific Developer
-    description: 50+ owned repositories — demonstrates sustained development activity
+    description: "{ownedReposCount} repositories (prolific developer)"
     weight: -0.30
     condition:
       type: owned_repos_count
@@ -161,7 +159,7 @@ trust_signals:
 
   - id: ACTIVE_CONTRIBUTOR
     name: Active Contributor
-    description: 10+ repositories
+    description: "{ownedReposCount} repositories"
     weight: -0.20
     condition:
       type: owned_repos_count
@@ -172,7 +170,7 @@ trust_signals:
 
   - id: HAS_POPULAR_REPOS
     name: Has Popular Repositories
-    description: Repos have accumulated 50+ total stars — community validated work
+    description: "{totalStars} total stars across repositories"
     weight: -0.20
     condition:
       type: total_stars
@@ -182,7 +180,7 @@ trust_signals:
 
   - id: CONSISTENT_ACTIVITY
     name: Consistent Recent Activity
-    description: Has public events in the last 30 days — actively using the account
+    description: "{veryRecentEventCount} events in last 30 days"
     weight: -0.15
     condition:
       type: very_recent_event_count_30d

@@ -3,7 +3,7 @@
   "title": "Flagrix Detection Rules Schema",
   "description": "Schema for validating Flagrix YAML rule files after compilation to JSON",
   "type": "object",
-  "required": ["version", "lastUpdated", "maliciousPackages", "yaraRules", "knownBadHashes"],
+  "required": ["version", "lastUpdated", "maliciousPackages", "yaraRules", "knownBadHashes", "userProfileRules"],
   "properties": {
     "version": {
       "type": "string",
@@ -65,7 +65,80 @@
         },
         "additionalProperties": false
       }
+    },
+    "userProfileRules": {
+      "type": "object",
+      "description": "GitHub user-profile scoring ruleset consumed by the scanner",
+      "required": ["riskFactors", "trustSignals", "riskLevels"],
+      "properties": {
+        "riskFactors": { "type": "array", "items": { "$ref": "#/$defs/profileRule" } },
+        "trustSignals": { "type": "array", "items": { "$ref": "#/$defs/profileRule" } },
+        "riskLevels": {
+          "type": "object",
+          "required": ["mediumMinScore", "highMinScore", "recommendations"],
+          "properties": {
+            "mediumMinScore": { "type": "number" },
+            "highMinScore": { "type": "number" },
+            "recommendations": {
+              "type": "object",
+              "required": ["low", "medium", "high"],
+              "properties": {
+                "low": { "type": "string" },
+                "medium": { "type": "string" },
+                "high": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "profileCondition": {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string" },
+        "operator": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq"] },
+        "value": { "type": ["number", "boolean"] }
+      },
+      "additionalProperties": false
+    },
+    "profileRule": {
+      "type": "object",
+      "required": ["id", "name", "description", "weight", "condition"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "weight": { "type": "number" },
+        "exclusiveWith": { "type": "string" },
+        "condition": {
+          "type": "object",
+          "oneOf": [
+            {
+              "required": ["field", "operator", "value"],
+              "properties": {
+                "field": { "type": "string" },
+                "operator": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq"] },
+                "value": { "type": ["number", "boolean"] }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": ["all"],
+              "properties": {
+                "all": { "type": "array", "items": { "$ref": "#/$defs/profileCondition" } }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

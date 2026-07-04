@@ -27,7 +27,7 @@ function validate(): void {
   const signatures = JSON.parse(readFileSync(signaturesPath, "utf8"))
   const schema = JSON.parse(readFileSync(schemaPath, "utf8"))
 
-  const ajv = new Ajv({ allErrors: true })
+  const ajv = new Ajv({ allErrors: true, allowUnionTypes: true })
   const validate = ajv.compile(schema)
   const valid = validate(signatures)
 

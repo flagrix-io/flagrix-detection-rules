@@ -46,12 +46,42 @@ interface KnownBadHash {
   description?: string
 }
 
+interface ProfileSimpleCondition {
+  field: string
+  operator: string
+  value: number | boolean
+}
+interface ProfileCondition {
+  all?: ProfileSimpleCondition[]
+  field?: string
+  operator?: string
+  value?: number | boolean
+}
+interface ProfileRiskRule {
+  id: string
+  name: string
+  description: string
+  weight: number
+  condition: ProfileCondition
+  exclusiveWith?: string
+}
+interface UserProfileRuleset {
+  riskFactors: ProfileRiskRule[]
+  trustSignals: ProfileRiskRule[]
+  riskLevels: {
+    mediumMinScore: number
+    highMinScore: number
+    recommendations: { low: string; medium: string; high: string }
+  }
+}
+
 interface SignatureDatabase {
   version: string
   lastUpdated: string
   maliciousPackages: MaliciousPackage[]
   yaraRules: YaraRule[]
   knownBadHashes: KnownBadHash[]
+  userProfileRules: UserProfileRuleset
 }
 
 // ── Load malicious packages ────────────────────────────────────────────────────
@@ -166,6 +196,94 @@ function loadKnownBadHashes(): KnownBadHash[] {
   }))
 }
 
+// ── Load user-profile scoring ruleset ───────────────────────────────────────
+
+// Maps the human-friendly yaml condition `type` names to the camelCase feature
+// fields on GitHubUserFeatures that the scanner evaluates.
+const PROFILE_FIELD_MAP: Record<string, string> = {
+  account_age_days: "accountAgeDays",
+  followers: "followers",
+  following: "following",
+  follower_following_ratio: "followerFollowingRatio",
+  owned_repos_count: "ownedReposCount",
+  total_stars: "totalStars",
+  recent_event_count_90d: "recentEventCount",
+  very_recent_event_count_30d: "veryRecentEventCount",
+  has_profile_photo: "hasProfilePhoto",
+  is_profile_complete: "isProfileComplete",
+}
+
+interface RawProfileCondition {
+  type: string
+  operator?: string
+  value?: number | boolean
+  conditions?: Array<{ type: string; operator: string; value: number | boolean }>
+}
+interface RawProfileRule {
+  id: string
+  name: string
+  description: string
+  weight: number
+  condition: RawProfileCondition
+  exclusive_with?: string
+}
+
+function mapField(type: string): string {
+  const field = PROFILE_FIELD_MAP[type]
+  if (!field) throw new Error(`Unknown user-profile condition type: "${type}"`)
+  return field
+}
+
+function compileCondition(raw: RawProfileCondition): ProfileCondition {
+  if (raw.type === "compound") {
+    return {
+      all: (raw.conditions ?? []).map((c) => ({
+        field: mapField(c.type),
+        operator: c.operator,
+        value: c.value,
+      })),
+    }
+  }
+  return { field: mapField(raw.type), operator: raw.operator!, value: raw.value! }
+}
+
+function compileRule(raw: RawProfileRule): ProfileRiskRule {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    weight: raw.weight,
+    condition: compileCondition(raw.condition),
+    ...(raw.exclusive_with ? { exclusiveWith: raw.exclusive_with } : {}),
+  }
+}
+
+function loadUserProfileRules(): UserProfileRuleset {
+  const data = loadYaml<{
+    risk_factors: RawProfileRule[]
+    trust_signals: RawProfileRule[]
+    risk_levels: {
+      low: { max_score: number; recommendation: string }
+      medium: { min_score: number; max_score: number; recommendation: string }
+      high: { min_score: number; recommendation: string }
+    }
+  }>("rules/github/user-profile.yaml")
+
+  return {
+    riskFactors: data.risk_factors.map(compileRule),
+    trustSignals: data.trust_signals.map(compileRule),
+    riskLevels: {
+      mediumMinScore: data.risk_levels.medium.min_score,
+      highMinScore: data.risk_levels.high.min_score,
+      recommendations: {
+        low: data.risk_levels.low.recommendation,
+        medium: data.risk_levels.medium.recommendation,
+        high: data.risk_levels.high.recommendation,
+      },
+    },
+  }
+}
+
 // ── Determine version ─────────────────────────────────────────────────────────
 
 // The release version is the single source of truth in package.json (format
@@ -190,12 +308,18 @@ function build(): void {
   const knownBadHashes = loadKnownBadHashes()
   console.log(`  Loaded ${knownBadHashes.length} known bad hashes`)
 
+  const userProfileRules = loadUserProfileRules()
+  console.log(
+    `  Loaded ${userProfileRules.riskFactors.length} risk factors + ${userProfileRules.trustSignals.length} trust signals`
+  )
+
   const db: SignatureDatabase = {
     version: buildVersion(),
     lastUpdated: new Date().toISOString(),
     maliciousPackages,
     yaraRules,
     knownBadHashes,
+    userProfileRules,
   }
 
   const outputPath = join(ROOT, "signatures.json")
@@ -206,6 +330,9 @@ function build(): void {
   console.log(`  Packages: ${maliciousPackages.length}`)
   console.log(`  YARA rules: ${yaraRules.length}`)
   console.log(`  Bad hashes: ${knownBadHashes.length}`)
+  console.log(
+    `  Profile rules: ${userProfileRules.riskFactors.length} risk / ${userProfileRules.trustSignals.length} trust`
+  )
 }
 
 build()
