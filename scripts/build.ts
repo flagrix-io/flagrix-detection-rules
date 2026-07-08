@@ -36,6 +36,10 @@ interface YaraRule {
   description: string
   tags: string[]
   severity: string
+  /** Minimum regex matches in one file before the rule fires (default 1). */
+  minMatches?: number
+  /** Restrict the rule to these file extensions (default: all scannable). */
+  fileExtensions?: string[]
 }
 
 interface KnownBadHash {
@@ -157,6 +161,12 @@ function loadYaraRules(): YaraRule[] {
         description: rule.description,
         tags: rule.tags,
         severity: rule.severity,
+        ...(typeof rule.pattern.min_matches === "number" && rule.pattern.min_matches > 1
+          ? { minMatches: rule.pattern.min_matches }
+          : {}),
+        ...(Array.isArray(rule.pattern.file_extensions) && rule.pattern.file_extensions.length > 0
+          ? { fileExtensions: rule.pattern.file_extensions as string[] }
+          : {}),
       })
     }
   }
@@ -172,6 +182,12 @@ function loadYaraRules(): YaraRule[] {
         description: rule.description,
         tags: rule.tags,
         severity: rule.severity,
+        ...(typeof rule.pattern.min_matches === "number" && rule.pattern.min_matches > 1
+          ? { minMatches: rule.pattern.min_matches }
+          : {}),
+        ...(Array.isArray(rule.pattern.file_extensions) && rule.pattern.file_extensions.length > 0
+          ? { fileExtensions: rule.pattern.file_extensions as string[] }
+          : {}),
       })
     }
   }

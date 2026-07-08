@@ -3,7 +3,14 @@
   "title": "Flagrix Detection Rules Schema",
   "description": "Schema for validating Flagrix YAML rule files after compilation to JSON",
   "type": "object",
-  "required": ["version", "lastUpdated", "maliciousPackages", "yaraRules", "knownBadHashes", "userProfileRules"],
+  "required": [
+    "version",
+    "lastUpdated",
+    "maliciousPackages",
+    "yaraRules",
+    "knownBadHashes",
+    "userProfileRules"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -18,13 +25,33 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "severity", "source"],
+        "required": [
+          "name",
+          "severity",
+          "source"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
-          "source": { "type": "string" },
-          "version": { "type": "string" },
-          "description": { "type": "string" }
+          "name": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
         },
         "additionalProperties": false
       }
@@ -33,17 +60,57 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "pattern", "description", "tags", "severity"],
+        "required": [
+          "id",
+          "name",
+          "pattern",
+          "description",
+          "tags",
+          "severity"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
-          "name": { "type": "string" },
-          "pattern": { "type": "string" },
-          "description": { "type": "string" },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
           "tags": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "minMatches": {
+            "type": "integer",
+            "minimum": 2,
+            "description": "Minimum regex matches in one file before the rule fires (default 1)"
+          },
+          "fileExtensions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\."
+            },
+            "minItems": 1,
+            "description": "Restrict the rule to these file extensions"
+          }
         },
         "additionalProperties": false
       }
@@ -52,16 +119,34 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["sha256", "type", "source"],
+        "required": [
+          "sha256",
+          "type",
+          "source"
+        ],
         "properties": {
           "sha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
           },
-          "type": { "type": "string", "enum": ["pdf", "js", "binary", "archive"] },
-          "malwareFamily": { "type": "string" },
-          "source": { "type": "string" },
-          "description": { "type": "string" }
+          "type": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "js",
+              "binary",
+              "archive"
+            ]
+          },
+          "malwareFamily": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
         },
         "additionalProperties": false
       }
@@ -69,23 +154,55 @@
     "userProfileRules": {
       "type": "object",
       "description": "GitHub user-profile scoring ruleset consumed by the scanner",
-      "required": ["riskFactors", "trustSignals", "riskLevels"],
+      "required": [
+        "riskFactors",
+        "trustSignals",
+        "riskLevels"
+      ],
       "properties": {
-        "riskFactors": { "type": "array", "items": { "$ref": "#/$defs/profileRule" } },
-        "trustSignals": { "type": "array", "items": { "$ref": "#/$defs/profileRule" } },
+        "riskFactors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/profileRule"
+          }
+        },
+        "trustSignals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/profileRule"
+          }
+        },
         "riskLevels": {
           "type": "object",
-          "required": ["mediumMinScore", "highMinScore", "recommendations"],
+          "required": [
+            "mediumMinScore",
+            "highMinScore",
+            "recommendations"
+          ],
           "properties": {
-            "mediumMinScore": { "type": "number" },
-            "highMinScore": { "type": "number" },
+            "mediumMinScore": {
+              "type": "number"
+            },
+            "highMinScore": {
+              "type": "number"
+            },
             "recommendations": {
               "type": "object",
-              "required": ["low", "medium", "high"],
+              "required": [
+                "low",
+                "medium",
+                "high"
+              ],
               "properties": {
-                "low": { "type": "string" },
-                "medium": { "type": "string" },
-                "high": { "type": "string" }
+                "low": {
+                  "type": "string"
+                },
+                "medium": {
+                  "type": "string"
+                },
+                "high": {
+                  "type": "string"
+                }
               },
               "additionalProperties": false
             }
@@ -101,37 +218,97 @@
     "profileCondition": {
       "type": "object",
       "properties": {
-        "field": { "type": "string" },
-        "operator": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq"] },
-        "value": { "type": ["number", "boolean"] }
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "eq"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "boolean"
+          ]
+        }
       },
       "additionalProperties": false
     },
     "profileRule": {
       "type": "object",
-      "required": ["id", "name", "description", "weight", "condition"],
+      "required": [
+        "id",
+        "name",
+        "description",
+        "weight",
+        "condition"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "weight": { "type": "number" },
-        "exclusiveWith": { "type": "string" },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]+$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "exclusiveWith": {
+          "type": "string"
+        },
         "condition": {
           "type": "object",
           "oneOf": [
             {
-              "required": ["field", "operator", "value"],
+              "required": [
+                "field",
+                "operator",
+                "value"
+              ],
               "properties": {
-                "field": { "type": "string" },
-                "operator": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq"] },
-                "value": { "type": ["number", "boolean"] }
+                "field": {
+                  "type": "string"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": [
+                    "lt",
+                    "lte",
+                    "gt",
+                    "gte",
+                    "eq"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "boolean"
+                  ]
+                }
               },
               "additionalProperties": false
             },
             {
-              "required": ["all"],
+              "required": [
+                "all"
+              ],
               "properties": {
-                "all": { "type": "array", "items": { "$ref": "#/$defs/profileCondition" } }
+                "all": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/profileCondition"
+                  }
+                }
               },
               "additionalProperties": false
             }
