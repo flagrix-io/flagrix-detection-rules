@@ -52,7 +52,7 @@ rules:
   - id: CRYPTO_MINER
     name: Cryptocurrency Miner
     description: Cryptocurrency mining code — uses CPU resources for attacker profit
-    severity: high
+    severity: critical
     pattern:
       type: regex
       value: "stratum\\+tcp://|xmrig|cryptonight|monero"
@@ -125,16 +125,6 @@ rules:
       min_occurrences: 20
       file_extensions: [".js", ".ts", ".py"]
     tags: [obfuscation, hex-encoding]
-
-  - id: OBFUSCATED_CODE_EVAL_DYNAMIC
-    name: Dynamic Code Execution
-    description: eval(), new Function(), or setTimeout/setInterval with string argument — executes arbitrary dynamic code
-    severity: high
-    pattern:
-      type: regex
-      value: "eval\\s*\\([^)]{0,200}\\)|new\\s+Function\\s*\\([^)]{0,200}\\)|setTimeout\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]|setInterval\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]"
-      file_extensions: [".js", ".ts", ".mjs"]
-    tags: [obfuscation, eval, dynamic-code]
 
   - id: HIDDEN_CODE_LONG_LINE
     name: Extremely Long Line (Hidden Code Attack)

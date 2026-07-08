@@ -1,6 +1,6 @@
 {
-  "version": "2026.07.08.001",
-  "lastUpdated": "2026-07-08T16:11:45.940Z",
+  "version": "2026.07.08.002",
+  "lastUpdated": "2026-07-08T16:18:50.866Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -200,7 +200,7 @@
         "crypto",
         "resource-abuse"
       ],
-      "severity": "high",
+      "severity": "critical",
       "fileExtensions": [
         ".js",
         ".ts",
@@ -269,23 +269,6 @@
         "obfuscation",
         "eval",
         "payload"
-      ],
-      "severity": "high",
-      "fileExtensions": [
-        ".js",
-        ".ts",
-        ".mjs"
-      ]
-    },
-    {
-      "id": "OBFUSCATED_CODE_EVAL_DYNAMIC",
-      "name": "Dynamic Code Execution",
-      "pattern": "eval\\s*\\([^)]{0,200}\\)|new\\s+Function\\s*\\([^)]{0,200}\\)|setTimeout\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]|setInterval\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]",
-      "description": "eval(), new Function(), or setTimeout/setInterval with string argument — executes arbitrary dynamic code",
-      "tags": [
-        "obfuscation",
-        "eval",
-        "dynamic-code"
       ],
       "severity": "high",
       "fileExtensions": [
