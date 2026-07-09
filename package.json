@@ -1,6 +1,6 @@
 {
   "name": "@flagrix/detection-rules",
-  "version": "2026.07.09.001",
+  "version": "2026.07.09.002",
   "description": "Community-maintained threat detection rules for Flagrix — identifying malicious code, scam patterns, and supply chain attacks",
   "license": "MIT",
   "repository": {

@@ -14,7 +14,7 @@ rules:
       type: regex
       value: "[A-Za-z0-9+/]{50,}={0,2}"
       min_matches: 6
-      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".sh", ".ps1", ".psm1"]
     skip_test_files: true
     tags: [base64, obfuscation]
 
@@ -28,7 +28,7 @@ rules:
       type: regex
       value: "\\\\x[0-9a-fA-F]{2}"
       min_matches: 20
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php"]
     skip_test_files: true
     tags: [hex-encoding, obfuscation]
 
@@ -44,7 +44,7 @@ rules:
       # something, while bare "eval()" appears in prose (docs, error messages,
       # security tooling) and must not fire.
       value: "eval\\s*\\(\\s*[^)\\s][^)]{0,200}\\)"
-      file_extensions: [".js", ".ts", ".mjs"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [eval, dynamic-code, obfuscation]
 
@@ -57,7 +57,7 @@ rules:
     pattern:
       type: regex
       value: "new\\s+Function\\s*\\([^)]{0,200}\\)"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [function-constructor, dynamic-code, obfuscation]
 
@@ -70,7 +70,7 @@ rules:
     pattern:
       type: regex
       value: "(?:setTimeout|setInterval)\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [eval, dynamic-code, obfuscation]
 
@@ -84,7 +84,7 @@ rules:
     pattern:
       type: line-length
       threshold: 5000
-      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1", ".bat", ".cmd"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1", ".bat", ".cmd", ".vbs"]
     skip_test_files: true
     tags: [long-line, hidden-code, obfuscation]
 
@@ -110,7 +110,7 @@ rules:
         - "document\\.write\\s*\\("
         - "\\.innerHTML\\s*="
         - "window\\.location\\s*="
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     skip_test_files: true
     tags: [long-line, hidden-code, obfuscation, critical]
 
@@ -123,7 +123,7 @@ rules:
     pattern:
       type: regex
       value: "(?:String\\.fromCharCode|fromCharCode)\\s*\\([\\d\\s,]+\\)"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [fromcharcode, obfuscation, eval-bypass]
 
@@ -136,6 +136,6 @@ rules:
     pattern:
       type: regex
       value: "\\[(?:\\s*\\d{2,3}\\s*,\\s*){20,}\\d{2,3}\\s*\\]"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [charcode-array, obfuscation]

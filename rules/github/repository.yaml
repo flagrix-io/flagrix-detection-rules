@@ -12,7 +12,7 @@ rules:
     pattern:
       type: regex
       value: "require\\(['\"]child_process['\"]\\)\\.exec.*\\bhttp[s]?://"
-      file_extensions: [".js", ".ts", ".mjs", ".cjs"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [lazarus, beavertail, loader, apt]
 
   - id: BEAVERTAIL_EXFIL
@@ -22,7 +22,7 @@ rules:
     pattern:
       type: regex
       value: "process\\.env.*JSON\\.stringify.*fetch|axios\\.post"
-      file_extensions: [".js", ".ts", ".mjs", ".cjs"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [lazarus, beavertail, exfiltration, apt]
 
   # ── InvisibleFerret ──────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ rules:
     pattern:
       type: regex
       value: "\\bnet\\.Socket\\(\\)|socket\\.socket.*SOCK_STREAM.*connect"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [shell, backdoor, remote-access]
 
   - id: CRYPTO_MINER
@@ -62,7 +62,7 @@ rules:
       # dropped — it flagged legitimate crypto wallets/portfolios/payment code
       # (critical FP). xmrig + cryptonight + stratum+tcp cover Monero *mining*.
       value: "stratum\\+tcp://|xmrig|cryptonight"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [miner, crypto, resource-abuse]
 
   - id: CREDENTIAL_THEFT
@@ -76,7 +76,7 @@ rules:
       # keychain") as critical. Match the actual credential-extraction
       # subcommands of the macOS `security` tool instead.
       value: "chrome.*Login Data|firefox.*logins\\.json|find-generic-password|find-internet-password|dump-keychain"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh"]
     tags: [credentials, theft, stealer]
 
   - id: ENV_EXFIL_WEBHOOK
@@ -86,7 +86,7 @@ rules:
     pattern:
       type: regex
       value: "process\\.env.*discord\\.com/api/webhooks|os\\.environ.*webhook.*post|process\\.env.*ntfy\\.sh"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [exfiltration, webhook, secrets]
 
   - id: DISCORD_WEBHOOK_EXFIL
@@ -96,7 +96,7 @@ rules:
     pattern:
       type: regex
       value: "discord\\.com/api/webhooks.*process\\.env|discord\\.com/api/webhooks.*os\\.environ"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [exfiltration, discord, webhook]
 
   - id: OBFUSCATED_EVAL
@@ -106,7 +106,7 @@ rules:
     pattern:
       type: regex
       value: "eval\\(atob\\(|eval\\(Buffer\\.from\\(.*base64"
-      file_extensions: [".js", ".ts", ".mjs"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [obfuscation, eval, payload]
 
   # ── Obfuscation Patterns ─────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ rules:
       type: base64-density
       min_string_length: 50
       min_occurrences: 6
-      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".sh", ".ps1", ".psm1"]
     tags: [obfuscation, base64]
 
   - id: OBFUSCATED_CODE_HEX
@@ -133,7 +133,7 @@ rules:
     pattern:
       type: hex-density
       min_occurrences: 20
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php"]
     tags: [obfuscation, hex-encoding]
 
   - id: HIDDEN_CODE_LONG_LINE
@@ -145,7 +145,7 @@ rules:
     pattern:
       type: line-length
       threshold: 5000
-      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1", ".bat", ".cmd"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1", ".bat", ".cmd", ".vbs"]
     tags: [obfuscation, hidden-code, long-line]
 
   - id: HIDDEN_CODE_LONG_LINE_CRITICAL
@@ -167,7 +167,7 @@ rules:
         - "fromCharCode"
         - "\\.innerHTML\\s*="
         - "window\\.location\\s*="
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [obfuscation, hidden-code, long-line, critical]
 
   # ── Hardcoded Secrets ────────────────────────────────────────────────────────
@@ -179,7 +179,7 @@ rules:
     pattern:
       type: regex
       value: "AKIA[0-9A-Z]{16}"
-      file_extensions: [".js", ".ts", ".py", ".sh", ".env", ".json", ".yaml", ".yml"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".env", ".json", ".yaml", ".yml"]
     tags: [secrets, aws, credentials]
 
   - id: HARDCODED_GITHUB_TOKEN
@@ -189,7 +189,7 @@ rules:
     pattern:
       type: regex
       value: "ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}"
-      file_extensions: [".js", ".ts", ".py", ".sh", ".yaml", ".yml"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".yaml", ".yml"]
     tags: [secrets, github, credentials]
 
   - id: HARDCODED_STRIPE_KEY
@@ -199,7 +199,7 @@ rules:
     pattern:
       type: regex
       value: "sk_live_[a-zA-Z0-9]{24,}"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [secrets, stripe, credentials]
 
   - id: HARDCODED_API_KEY
@@ -209,7 +209,7 @@ rules:
     pattern:
       type: regex
       value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [secrets, credentials, api-key]
 
   - id: HARDCODED_DB_CONNECTION
@@ -219,7 +219,7 @@ rules:
     pattern:
       type: regex
       value: "(?:mongodb|mongo)[+:\\/\\/]{0,6}[^@\\s]+:[^@\\s]+@|postgres:\\/\\/[^@\\s]+:[^@\\s]+@"
-      file_extensions: [".js", ".ts", ".py", ".env"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".env"]
     tags: [secrets, database, credentials]
 
   # ── Network Communication ────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ rules:
     pattern:
       type: regex
       value: "https?:\\/\\/discord(?:app)?\\.com\\/api\\/webhooks\\/\\d+\\/[a-zA-Z0-9_-]+"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [network, discord, exfiltration]
 
   - id: NETWORK_TELEGRAM_TOKEN
@@ -241,7 +241,7 @@ rules:
     pattern:
       type: regex
       value: "\\d{8,10}:[a-zA-Z0-9_-]{35}"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh"]
     tags: [network, telegram, c2]
 
   - id: NETWORK_PASTEBIN
@@ -251,7 +251,7 @@ rules:
     pattern:
       type: regex
       value: "(?:pastebin\\.com|hastebin\\.com|paste\\.ee)\\/[a-zA-Z0-9]+"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [network, pastebin, payload-hosting]
 
   - id: NETWORK_URL_SHORTENER
@@ -261,7 +261,7 @@ rules:
     pattern:
       type: regex
       value: "(?:bit\\.ly|tinyurl\\.com|t\\.co)\\/[a-zA-Z0-9]+"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh"]
     tags: [network, url-shortener, obfuscation]
 
   - id: NETWORK_SUSPICIOUS_TLD
@@ -271,7 +271,7 @@ rules:
     pattern:
       type: regex
       value: "https?:\\/\\/[a-zA-Z0-9-]+\\.(?:tk|ml|ga|cf|gq|onion|xyz)(?:\\/|$)"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [network, suspicious-domain, malware-hosting]
 
   - id: NETWORK_NGROK_TUNNEL
@@ -281,7 +281,7 @@ rules:
     pattern:
       type: regex
       value: "https?:\\/\\/[a-zA-Z0-9-]+\\.ngrok\\.io"
-      file_extensions: [".js", ".ts", ".py", ".sh"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh"]
     tags: [network, ngrok, c2]
 
   # ── Data Exfiltration ────────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ rules:
     pattern:
       type: regex
       value: "navigator\\.clipboard\\.read(?:Text)?\\s*\\("
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [exfiltration, clipboard, data-theft]
 
   - id: EXFIL_COOKIE
@@ -303,7 +303,7 @@ rules:
     pattern:
       type: regex
       value: "document\\.cookie"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [exfiltration, cookies, session-theft]
 
   - id: EXFIL_KEYLOGGER
@@ -313,7 +313,7 @@ rules:
     pattern:
       type: regex
       value: "(?:addEventListener|on)\\s*\\(\\s*['\"](?:keydown|keypress|keyup)['\"]"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [exfiltration, keylogger, credential-theft]
 
   # ── Backdoors ────────────────────────────────────────────────────────────────
@@ -325,7 +325,7 @@ rules:
     pattern:
       type: regex
       value: "eval\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)|exec\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [backdoor, rce, critical]
 
   - id: BACKDOOR_DYNAMIC_REQUIRE
@@ -335,7 +335,7 @@ rules:
     pattern:
       type: regex
       value: "require\\s*\\(\\s*(?:request|req)(?:\\.|\\..body|\\..query)"
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [backdoor, rce, dynamic-require]
 
   - id: BACKDOOR_HARDCODED_AUTH
@@ -345,7 +345,7 @@ rules:
     pattern:
       type: regex
       value: "(?:password|auth)\\s*(?:===?|==)\\s*['\"][^'\"]{0,20}['\"]\\s*\\)"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [backdoor, auth-bypass, hardcoded]
 
   # ── Suspicious File Access ───────────────────────────────────────────────────
@@ -357,7 +357,7 @@ rules:
     pattern:
       type: regex
       value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:\\.ssh|\\.aws|\\.gnupg|\\.docker|id_rsa|credentials)"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [file-access, credentials, ssh, aws]
 
   - id: FILE_ACCESS_SYSTEM
@@ -367,7 +367,7 @@ rules:
     pattern:
       type: regex
       value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:etc\\/passwd|etc\\/shadow|\\.bash_history|\\.zsh_history)"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [file-access, system-files, privilege-escalation]
 
   - id: FILE_ACCESS_BROWSER_DATA
@@ -377,7 +377,7 @@ rules:
     pattern:
       type: regex
       value: "(?:fs\\.read|readFileSync|readFile)\\s*\\([^)]*(?:Chrome|Firefox|Safari|Edge)[\\w\\s\\/\\\\]*(?:Cookies|Login|History)"
-      file_extensions: [".js", ".ts", ".py"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [file-access, browser-data, credential-theft]
 
   # ── Supply Chain ─────────────────────────────────────────────────────────────
@@ -418,7 +418,7 @@ rules:
       min_long_lines: 3
       long_line_threshold: 500
       min_short_var_ratio: 0.3
-      file_extensions: [".js", ".ts"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
       exclude_patterns: ["*.min.js", "*.min.ts"]
     tags: [code-integrity, minified, obfuscation]
 
@@ -491,5 +491,5 @@ rules:
       type: language-detection
       threshold_percentage: 5
       min_words: 10
-      file_extensions: [".js", ".ts", ".py", ".sh", ".ps1"]
+      file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1"]
     tags: [social-engineering, non-english, lazarus, obfuscation]
