@@ -1,6 +1,6 @@
 {
   "version": "2026.07.08.002",
-  "lastUpdated": "2026-07-08T16:18:50.866Z",
+  "lastUpdated": "2026-07-09T09:03:50.097Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -679,7 +679,7 @@
     {
       "id": "OBF_EVAL",
       "name": "eval() Usage",
-      "pattern": "eval\\s*\\([^)]{0,200}\\)",
+      "pattern": "eval\\s*\\(\\s*[^)\\s][^)]{0,200}\\)",
       "description": "eval() executes arbitrary dynamic code. While there are legitimate uses, eval() is the #1 technique for executing hidden malicious payloads.\n",
       "tags": [
         "eval",

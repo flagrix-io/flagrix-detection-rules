@@ -40,7 +40,10 @@ rules:
     severity: high
     pattern:
       type: regex
-      value: "eval\\s*\\([^)]{0,200}\\)"
+      # Requires a non-empty argument: malicious eval always evaluates
+      # something, while bare "eval()" appears in prose (docs, error messages,
+      # security tooling) and must not fire.
+      value: "eval\\s*\\(\\s*[^)\\s][^)]{0,200}\\)"
       file_extensions: [".js", ".ts", ".mjs"]
     skip_test_files: true
     tags: [eval, dynamic-code, obfuscation]
