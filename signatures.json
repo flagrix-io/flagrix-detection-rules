@@ -1,6 +1,6 @@
 {
-  "version": "2026.07.08.002",
-  "lastUpdated": "2026-07-09T09:25:31.727Z",
+  "version": "2026.07.09.001",
+  "lastUpdated": "2026-07-09T12:03:20.263Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -193,7 +193,7 @@
     {
       "id": "CRYPTO_MINER",
       "name": "Cryptocurrency Miner",
-      "pattern": "stratum\\+tcp://|xmrig|cryptonight|monero",
+      "pattern": "stratum\\+tcp://|xmrig|cryptonight",
       "description": "Cryptocurrency mining code — uses CPU resources for attacker profit",
       "tags": [
         "miner",
@@ -211,8 +211,8 @@
     {
       "id": "CREDENTIAL_THEFT",
       "name": "Browser Credential Theft",
-      "pattern": "chrome.*Login Data|firefox.*logins\\.json|keychain",
-      "description": "Reads browser password databases (Chrome Login Data, Firefox logins.json, macOS Keychain)",
+      "pattern": "chrome.*Login Data|firefox.*logins\\.json|find-generic-password|find-internet-password|dump-keychain",
+      "description": "Reads browser password databases (Chrome Login Data, Firefox logins.json) or dumps the macOS Keychain via the security(1) command",
       "tags": [
         "credentials",
         "theft",
@@ -632,7 +632,7 @@
     {
       "id": "SOCIAL_ENGINEERING_SECURITY_BYPASS",
       "name": "Security Bypass Instructions in README",
-      "pattern": "(?:disable|turn off|bypass)[\\s\\w]*(?:antivirus|firewall|security|protection)",
+      "pattern": "(?:disable|turn off|bypass)[\\s\\w]{0,30}(?:antivirus|firewall|windows defender|gatekeeper|smartscreen|real-time protection|security software|security tool)",
       "description": "README instructs users to disable antivirus, firewall, or security tools",
       "tags": [
         "social-engineering",

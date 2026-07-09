@@ -58,17 +58,24 @@ rules:
     severity: critical
     pattern:
       type: regex
-      value: "stratum\\+tcp://|xmrig|cryptonight|monero"
+      # Specific mining indicators only. The bare currency name "monero" was
+      # dropped — it flagged legitimate crypto wallets/portfolios/payment code
+      # (critical FP). xmrig + cryptonight + stratum+tcp cover Monero *mining*.
+      value: "stratum\\+tcp://|xmrig|cryptonight"
       file_extensions: [".js", ".ts", ".py", ".sh"]
     tags: [miner, crypto, resource-abuse]
 
   - id: CREDENTIAL_THEFT
     name: Browser Credential Theft
-    description: Reads browser password databases (Chrome Login Data, Firefox logins.json, macOS Keychain)
+    description: Reads browser password databases (Chrome Login Data, Firefox logins.json) or dumps the macOS Keychain via the security(1) command
     severity: critical
     pattern:
       type: regex
-      value: "chrome.*Login Data|firefox.*logins\\.json|keychain"
+      # The bare word "keychain" was dropped — it flagged every legitimate
+      # keychain wrapper (react-native-keychain, `setPassword`, "system
+      # keychain") as critical. Match the actual credential-extraction
+      # subcommands of the macOS `security` tool instead.
+      value: "chrome.*Login Data|firefox.*logins\\.json|find-generic-password|find-internet-password|dump-keychain"
       file_extensions: [".js", ".ts", ".py", ".sh"]
     tags: [credentials, theft, stealer]
 
@@ -423,7 +430,12 @@ rules:
     severity: high
     pattern:
       type: regex
-      value: "(?:disable|turn off|bypass)[\\s\\w]*(?:antivirus|firewall|security|protection)"
+      # Bounded gap ({0,30}) requires the action verb to sit near its target,
+      # and the bare words "security"/"protection" were replaced with named
+      # products / qualified phrases. Previously matched benign prose like
+      # "bypass the security review" or "disable the security question", and
+      # missed "turn off Windows Defender" (no "defender" alternative).
+      value: "(?:disable|turn off|bypass)[\\s\\w]{0,30}(?:antivirus|firewall|windows defender|gatekeeper|smartscreen|real-time protection|security software|security tool)"
       file_names: ["README.md", "README.txt", "README"]
     tags: [social-engineering, security-bypass]
 
