@@ -33,7 +33,10 @@ rules:
     severity: critical
     pattern:
       type: regex
-      value: "keyboard\\.on_press|pynput\\.keyboard|keylogger"
+      # Match the actual keylogger APIs, not the bare word "keylogger" —
+      # that alternative matched the term in comments/docs/security tooling
+      # (any file discussing keyloggers), a pure false-positive source.
+      value: "keyboard\\.on_press|pynput\\.keyboard|from\\s+pynput"
       file_extensions: [".py"]
     tags: [lazarus, invisibleferret, keylogger, apt]
 

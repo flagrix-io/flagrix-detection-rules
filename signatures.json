@@ -1,6 +1,6 @@
 {
   "version": "2026.07.08.002",
-  "lastUpdated": "2026-07-09T09:03:50.097Z",
+  "lastUpdated": "2026-07-09T09:25:31.727Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -160,7 +160,7 @@
     {
       "id": "INVISIBLEFERRET_KEYLOG",
       "name": "InvisibleFerret Keylogger",
-      "pattern": "keyboard\\.on_press|pynput\\.keyboard|keylogger",
+      "pattern": "keyboard\\.on_press|pynput\\.keyboard|from\\s+pynput",
       "description": "Keylogger pattern using pynput — used by Lazarus Group's InvisibleFerret Python malware",
       "tags": [
         "lazarus",
