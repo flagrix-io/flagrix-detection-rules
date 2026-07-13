@@ -26,6 +26,7 @@ interface MaliciousPackage {
   severity: string
   source: string
   version?: string
+  versions?: string[]
   description?: string
 }
 
@@ -36,10 +37,14 @@ interface YaraRule {
   description: string
   tags: string[]
   severity: string
+  confidence?: "high" | "medium" | "low"
+  context?: "keyboard-capture"
   /** Minimum regex matches in one file before the rule fires (default 1). */
   minMatches?: number
   /** Restrict the rule to these file extensions (default: all scannable). */
   fileExtensions?: string[]
+  /** Restrict the rule to exact file basenames. */
+  fileNames?: string[]
 }
 
 interface KnownBadHash {
@@ -102,6 +107,7 @@ function loadMaliciousPackages(): MaliciousPackage[] {
       severity: pkg.severity,
       source: pkg.source,
       version: pkg.version,
+      versions: pkg.versions,
       description: pkg.description,
     })
   }
@@ -128,6 +134,8 @@ interface RawRule {
   name: string
   description: string
   severity: string
+  confidence?: "high" | "medium" | "low"
+  context?: "keyboard-capture"
   tags: string[]
   pattern: {
     type: string
@@ -161,11 +169,16 @@ function loadYaraRules(): YaraRule[] {
         description: rule.description,
         tags: rule.tags,
         severity: rule.severity,
+        ...(rule.confidence ? { confidence: rule.confidence } : {}),
+        ...(rule.context ? { context: rule.context } : {}),
         ...(typeof rule.pattern.min_matches === "number" && rule.pattern.min_matches > 1
           ? { minMatches: rule.pattern.min_matches }
           : {}),
         ...(Array.isArray(rule.pattern.file_extensions) && rule.pattern.file_extensions.length > 0
           ? { fileExtensions: rule.pattern.file_extensions as string[] }
+          : {}),
+        ...(Array.isArray(rule.pattern.file_names) && rule.pattern.file_names.length > 0
+          ? { fileNames: rule.pattern.file_names as string[] }
           : {}),
       })
     }
@@ -182,11 +195,16 @@ function loadYaraRules(): YaraRule[] {
         description: rule.description,
         tags: rule.tags,
         severity: rule.severity,
+        ...(rule.confidence ? { confidence: rule.confidence } : {}),
+        ...(rule.context ? { context: rule.context } : {}),
         ...(typeof rule.pattern.min_matches === "number" && rule.pattern.min_matches > 1
           ? { minMatches: rule.pattern.min_matches }
           : {}),
         ...(Array.isArray(rule.pattern.file_extensions) && rule.pattern.file_extensions.length > 0
           ? { fileExtensions: rule.pattern.file_extensions as string[] }
+          : {}),
+        ...(Array.isArray(rule.pattern.file_names) && rule.pattern.file_names.length > 0
+          ? { fileNames: rule.pattern.file_names as string[] }
           : {}),
       })
     }

@@ -38,6 +38,8 @@ Thank you for helping keep developers safe!
     What does this detect and why is it dangerous?
     Link to source: https://example.com/threat-report
   severity: critical  # critical | high | medium | low
+  confidence: high    # optional: high | medium | low
+  context: keyboard-capture # optional scanner-core behavioral check
   pattern:
     type: regex
     value: "your.*regex.*pattern"
@@ -50,6 +52,12 @@ Thank you for helping keep developers safe!
 - `high` — Strong indicator with low false-positive rate
 - `medium` — Suspicious but may have legitimate uses
 - `low` — Weak signal, informational only
+
+Severity is potential impact; `confidence` is certainty that the match really
+has that behavior. Regex-only heuristics should use `medium` or `low`
+confidence. Use a supported `context` check when a dangerous behavior requires
+multiple correlated actions—for example, a keyboard listener is only
+keylogging when it also reads and stores or transmits pressed keys.
 
 ### 3. Package format
 
