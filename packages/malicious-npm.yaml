@@ -1,7 +1,7 @@
 version: "1.0"
 category: "malicious-npm-packages"
 description: "Known malicious npm packages. All entries are confirmed malicious — do not add packages based on suspicion alone."
-last_updated: "2025-01-26"
+last_updated: "2026-07-13"
 
 packages:
   # ── Lazarus Group / BeaverTail / InvisibleFerret ──────────────────────────────
@@ -94,6 +94,7 @@ packages:
   - name: bcrypts-js
     severity: high
     source: npm-audit
+    versions: ["2.4.4"]
     description: Typosquat of 'bcrypt-js'
     added: "2024-01-01"
     typosquat_of: bcrypt-js
@@ -111,3 +112,111 @@ packages:
     description: Typosquat of 'express'
     added: "2024-01-01"
     typosquat_of: express
+
+  # ── OpenSSF OSV pinned benchmark set ────────────────────────────────────────
+
+  - name: axios.js
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-4275)
+
+  - name: axiosqqq
+    severity: high
+    source: openssf-osv
+    versions: ["1.16.2", "1.16.3", "1.16.9", "1.16.13"]
+    description: Confirmed malicious npm package (MAL-2026-4493)
+
+  - name: axioss
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15242)
+
+  - name: babel-laoder
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15281)
+
+  - name: babel-loadre
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15282)
+
+  - name: babel-loqder
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15283)
+
+  - name: babel-node
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15286)
+
+  - name: babel-pal
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15289)
+
+  - name: axios-http
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15238)
+
+  - name: axios-proxy
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2023-116)
+
+  - name: axios-browserify
+    severity: high
+    source: openssf-osv
+    versions: ["1.0.0"]
+    description: Confirmed malicious npm package (MAL-2025-4813)
+
+  - name: axios-builder
+    severity: high
+    source: openssf-osv
+    versions: ["1.2.1"]
+    description: Confirmed malicious npm package (MAL-2025-190832)
+
+  - name: axios-mockadptr
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2024-10692)
+
+  - name: axios-cancelable
+    severity: high
+    source: openssf-osv
+    versions: ["1.0.1", "1.0.2"]
+    description: Confirmed malicious npm package (MAL-2025-191389)
+
+  - name: babel-plugin-blocks
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2026-2631)
+
+  - name: babel-ganache
+    severity: high
+    source: openssf-osv
+    versions: ["2.2.4", "2.2.6", "2.2.7"]
+    description: Confirmed malicious npm package (MAL-2025-47613)
+
+  - name: babel-js
+    severity: high
+    source: openssf-osv
+    versions: ["1.0.1"]
+    description: Confirmed malicious npm package (MAL-2026-407)
+
+  - name: babel-npm-install
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15287)
+
+  - name: babel-npm-publish
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-15288)
+
+  - name: babel-loader-fs
+    severity: high
+    source: openssf-osv
+    description: Confirmed malicious npm package (MAL-2025-3985)

@@ -21,7 +21,7 @@ rules:
     severity: critical
     pattern:
       type: regex
-      value: "process\\.env.*JSON\\.stringify.*fetch|axios\\.post"
+      value: "JSON\\.stringify\\s*\\(\\s*process\\.env\\s*\\)[\\s\\S]{0,2000}(?:fetch\\s*\\(|axios\\.post\\s*\\()"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [lazarus, beavertail, exfiltration, apt]
 
@@ -48,7 +48,7 @@ rules:
     severity: critical
     pattern:
       type: regex
-      value: "\\bnet\\.Socket\\(\\)|socket\\.socket.*SOCK_STREAM.*connect"
+      value: "(?:net\\.Socket\\(\\)[\\s\\S]{0,2000}(?:child_process|/bin/(?:sh|bash)|cmd\\.exe)|(?:child_process|/bin/(?:sh|bash)|cmd\\.exe)[\\s\\S]{0,2000}net\\.Socket\\(\\))"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py"]
     tags: [shell, backdoor, remote-access]
 
@@ -68,7 +68,8 @@ rules:
   - id: CREDENTIAL_THEFT
     name: Browser Credential Theft
     description: Reads browser password databases (Chrome Login Data, Firefox logins.json) or dumps the macOS Keychain via the security(1) command
-    severity: critical
+    severity: high
+    confidence: medium
     pattern:
       type: regex
       # The bare word "keychain" was dropped — it flagged every legitimate
@@ -102,7 +103,7 @@ rules:
   - id: OBFUSCATED_EVAL
     name: Obfuscated Eval Execution
     description: Base64-encoded eval execution — decodes and executes hidden payload
-    severity: high
+    severity: critical
     pattern:
       type: regex
       value: "eval\\(atob\\(|eval\\(Buffer\\.from\\(.*base64"
@@ -204,8 +205,9 @@ rules:
 
   - id: HARDCODED_API_KEY
     name: Hardcoded API Key
-    description: Generic API key / secret key pattern assigned to a variable
-    severity: critical
+    description: Generic API key / secret key pattern assigned to a variable (obvious placeholders are downgraded by scanner context)
+    severity: high
+    confidence: medium
     pattern:
       type: regex
       value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
@@ -215,7 +217,8 @@ rules:
   - id: HARDCODED_DB_CONNECTION
     name: Hardcoded Database Connection String
     description: MongoDB or PostgreSQL connection string with credentials embedded
-    severity: high
+    severity: medium
+    confidence: medium
     pattern:
       type: regex
       value: "(?:mongodb|mongo)[+:\\/\\/]{0,6}[^@\\s]+:[^@\\s]+@|postgres:\\/\\/[^@\\s]+:[^@\\s]+@"
@@ -289,7 +292,8 @@ rules:
   - id: EXFIL_CLIPBOARD
     name: Clipboard Access
     description: Reads clipboard content — can steal copied passwords, 2FA codes, crypto addresses
-    severity: high
+    severity: medium
+    confidence: medium
     pattern:
       type: regex
       value: "navigator\\.clipboard\\.read(?:Text)?\\s*\\("
@@ -299,7 +303,8 @@ rules:
   - id: EXFIL_COOKIE
     name: Cookie Access
     description: Reads browser cookies via document.cookie — can steal session tokens
-    severity: high
+    severity: medium
+    confidence: medium
     pattern:
       type: regex
       value: "document\\.cookie"
@@ -307,14 +312,18 @@ rules:
     tags: [exfiltration, cookies, session-theft]
 
   - id: EXFIL_KEYLOGGER
-    name: Keylogger Pattern
-    description: Keyboard event listener (keydown/keypress) — captures user keystrokes
+    name: Keyboard Capture and Transmission
+    description: Reads pressed keys from a keyboard handler and stores or transmits them
     severity: critical
+    confidence: high
+    context: keyboard-capture
     pattern:
       type: regex
-      value: "(?:addEventListener|on)\\s*\\(\\s*['\"](?:keydown|keypress|keyup)['\"]"
+      # This locates the listener. Scanner-core's keyboard-capture context
+      # check then requires a key/code read plus a nearby storage/network sink.
+      value: "(?:addEventListener\\s*\\(\\s*['\"](?:keydown|keypress|keyup)['\"]|\\.on(?:keydown|keypress|keyup)\\s*=)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
-    tags: [exfiltration, keylogger, credential-theft]
+    tags: [exfiltration, keylogger, credential-theft, behavioral-chain]
 
   # ── Backdoors ────────────────────────────────────────────────────────────────
 
@@ -341,7 +350,8 @@ rules:
   - id: BACKDOOR_HARDCODED_AUTH
     name: Hardcoded Auth Bypass
     description: Hardcoded password check — always-true backdoor condition in auth logic
-    severity: critical
+    severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "(?:password|auth)\\s*(?:===?|==)\\s*['\"][^'\"]{0,20}['\"]\\s*\\)"
@@ -427,7 +437,8 @@ rules:
   - id: SOCIAL_ENGINEERING_SECURITY_BYPASS
     name: Security Bypass Instructions in README
     description: README instructs users to disable antivirus, firewall, or security tools
-    severity: high
+    severity: medium
+    confidence: low
     pattern:
       type: regex
       # Bounded gap ({0,30}) requires the action verb to sit near its target,

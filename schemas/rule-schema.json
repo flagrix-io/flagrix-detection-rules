@@ -49,6 +49,14 @@
           "version": {
             "type": "string"
           },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Exact affected package versions when a report covers more than one release"
+          },
           "description": {
             "type": "string"
           }
@@ -97,6 +105,16 @@
               "low"
             ]
           },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Certainty that a successful rule and context match represents the described behavior"
+          },
+          "context": {
+            "type": "string",
+            "enum": ["keyboard-capture"],
+            "description": "Optional scanner-core behavioral context required in addition to the regex"
+          },
           "minMatches": {
             "type": "integer",
             "minimum": 2,
@@ -110,6 +128,14 @@
             },
             "minItems": 1,
             "description": "Restrict the rule to these file extensions"
+          },
+          "fileNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Restrict the rule to exact file basenames"
           }
         },
         "additionalProperties": false

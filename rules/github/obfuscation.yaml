@@ -10,6 +10,7 @@ rules:
       but excessive use in source code is a red flag — it's the most common way to hide
       malicious payloads, C2 URLs, and commands from static analysis.
     severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "[A-Za-z0-9+/]{50,}={0,2}"
@@ -24,6 +25,7 @@ rules:
       20+ hex escape sequences (\xNN) in a single file. Hex encoding hides the actual
       string content from developers, often used to conceal URLs, commands, or shellcode.
     severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "\\\\x[0-9a-fA-F]{2}"
@@ -37,7 +39,8 @@ rules:
     description: >
       eval() executes arbitrary dynamic code. While there are legitimate uses, eval()
       is the #1 technique for executing hidden malicious payloads.
-    severity: high
+    severity: medium
+    confidence: low
     pattern:
       type: regex
       # Requires a non-empty argument: malicious eval always evaluates
@@ -53,7 +56,8 @@ rules:
     description: >
       new Function() creates and executes dynamic code similar to eval(). Used to
       hide malicious logic that bypasses some static analysis tools.
-    severity: high
+    severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "new\\s+Function\\s*\\([^)]{0,200}\\)"
@@ -66,7 +70,8 @@ rules:
     description: >
       Passing a string to setTimeout/setInterval executes it as code (like eval).
       A common obfuscation technique: setTimeout("maliciousCode()", 0)
-    severity: high
+    severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "(?:setTimeout|setInterval)\\s*\\(\\s*[\"'`][^\"'`]{0,200}[\"'`]"
@@ -120,6 +125,7 @@ rules:
       Constructs strings from char codes (e.g., String.fromCharCode(101,118,97,108) = "eval").
       Classic technique to hide malicious keywords from simple string scanning.
     severity: medium
+    confidence: low
     pattern:
       type: regex
       value: "(?:String\\.fromCharCode|fromCharCode)\\s*\\([\\d\\s,]+\\)"
@@ -133,9 +139,10 @@ rules:
       Array of 20+ numbers that look like char codes. Used as an alternative to
       fromCharCode to build malicious strings character by character.
     severity: medium
+    confidence: low
     pattern:
       type: regex
-      value: "\\[(?:\\s*\\d{2,3}\\s*,\\s*){20,}\\d{2,3}\\s*\\]"
+      value: "\\[\\s*(?:\\d{2,3}\\s*,\\s*){20,}\\d{2,3}\\s*\\]"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [charcode-array, obfuscation]
