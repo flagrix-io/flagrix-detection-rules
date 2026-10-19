@@ -155,12 +155,19 @@ function extractRegexPattern(rule: RawRule): string | null {
   return null
 }
 
+// Rules whose pattern type isn't "regex" are not emitted; scanner-core
+// implements those behaviors natively (detectObfuscation, checkPostinstallScripts,
+// detectNonEnglishComments, ...). List them so the YAML never silently claims
+// coverage that only exists in the engine.
+const droppedRules: string[] = []
+
 function loadYaraRules(): YaraRule[] {
   const rules: YaraRule[] = []
 
   const repoData = loadYaml<{ rules: RawRule[] }>("rules/github/repository.yaml")
   for (const rule of repoData.rules) {
     const pattern = extractRegexPattern(rule)
+    if (!pattern) droppedRules.push(`${rule.id} (${rule.pattern?.type})`)
     if (pattern) {
       rules.push({
         id: rule.id,
@@ -187,6 +194,7 @@ function loadYaraRules(): YaraRule[] {
   const obfData = loadYaml<{ rules: RawRule[] }>("rules/github/obfuscation.yaml")
   for (const rule of obfData.rules) {
     const pattern = extractRegexPattern(rule)
+    if (!pattern) droppedRules.push(`${rule.id} (${rule.pattern?.type})`)
     if (pattern) {
       rules.push({
         id: rule.id,
@@ -224,7 +232,8 @@ function loadKnownBadHashes(): KnownBadHash[] {
   return data.hashes.map((h) => ({
     sha256: h.sha256,
     type: h.type,
-    malwareFamily: h.malwareFamily,
+    // YAML documents the key as malware_family; accept both spellings.
+    malwareFamily: h.malwareFamily ?? (h as { malware_family?: string }).malware_family,
     source: h.source,
     description: h.description,
   }))
@@ -338,6 +347,10 @@ function build(): void {
 
   const yaraRules = loadYaraRules()
   console.log(`  Loaded ${yaraRules.length} YARA rules`)
+  if (droppedRules.length > 0) {
+    console.log(`  Note: ${droppedRules.length} non-regex rule(s) not compiled (engine-native):`)
+    for (const r of droppedRules) console.log(`    - ${r}`)
+  }
 
   const knownBadHashes = loadKnownBadHashes()
   console.log(`  Loaded ${knownBadHashes.length} known bad hashes`)

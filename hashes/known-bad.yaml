@@ -3,7 +3,7 @@ category: "known-bad-hashes"
 description: >
   SHA-256 hashes of known malicious files. All entries must be sourced from
   public threat intelligence feeds or verified malware analysis.
-last_updated: "2025-01-26"
+last_updated: "2026-10-19"
 
 hashes:
   # Entries from threat intel feeds will be added here.
@@ -14,3 +14,34 @@ hashes:
   #   source: virustotal|any.run|your-source
   #   description: optional human-readable note
   #   added: "YYYY-MM-DD"
+
+  - sha256: "9fc2570b7cef51c1b8df116d144d11ff4096357be7d2c4c6367cfc2509cf1bcc"
+    type: js
+    malware_family: shai-hulud
+    source: elastic-security-labs
+    description: Math_Symbol.js / math_init.js (CHAINDROP payload)
+    added: "2026-10-19"
+  - sha256: "fd3ca4007b225fdf8de7af4345a19179d5efa8c4bb9205f88cda806e5684b1eb"
+    type: js
+    malware_family: shai-hulud
+    source: elastic-security-labs
+    description: setup.mjs (CHAINDROP dropper)
+    added: "2026-10-19"
+  - sha256: "54dc7ea54a1317cca0e890a2770630cf7fa6c97813e0cb9d2caa93012b350668"
+    type: js
+    malware_family: shai-hulud
+    source: elastic-security-labs
+    description: setup.mjs (CHAINDROP dropper variant)
+    added: "2026-10-19"
+  - sha256: "25a0735d0db7dc40e5d45ce42d9c106067e6a66e184d967cfecfab17c3bcb5ef"
+    type: js
+    malware_family: shai-hulud
+    source: stepsecurity
+    description: lib/setup.mjs (tensorlake@0.5.144)
+    added: "2026-10-19"
+  - sha256: "b50a00900399ba99fb6ce1fc151519cb99d44320ef2a631f2237e1aea0ad6fec"
+    type: js
+    malware_family: shai-hulud
+    source: stepsecurity
+    description: lib/Math_Symbol.js (tensorlake@0.5.144)
+    added: "2026-10-19"

@@ -1,7 +1,7 @@
 version: "1.0"
 category: "malicious-npm-packages"
 description: "Known malicious npm packages. All entries are confirmed malicious — do not add packages based on suspicion alone."
-last_updated: "2026-07-13"
+last_updated: "2026-10-19"
 
 packages:
   # ── Lazarus Group / BeaverTail / InvisibleFerret ──────────────────────────────
@@ -19,12 +19,6 @@ packages:
     severity: critical
     source: lazarus
     description: Python-based data exfiltration malware from Lazarus Group — steals browser data, files, SSH keys
-    added: "2024-12-01"
-
-  - name: call-bind-apply-helpers
-    severity: critical
-    source: lazarus
-    description: Typosquat with BeaverTail malware payload — mimics legitimate npm utility
     added: "2024-12-01"
 
   - name: cors-parser
@@ -220,3 +214,52 @@ packages:
     severity: high
     source: openssf-osv
     description: Confirmed malicious npm package (MAL-2025-3985)
+
+  # ── 2026 campaigns ────────────────────────────────────────────────────────────
+
+  - name: tensorlake
+    severity: critical
+    source: shai-hulud
+    version: "0.5.144"
+    description: >
+      Compromised release (Oct 8, 2026). preinstall runs lib/setup.mjs, which fetches Bun and runs
+      Math_Symbol.js — Shai-Hulud stealer/worm with a gh-token-monitor wiper. 0.5.143 is clean.
+    added: "2026-10-19"
+    references:
+      - https://www.stepsecurity.io/blog/tensorlake-npm-compromised-hostage-token-worm
+
+  - name: jsonwebauth
+    severity: critical
+    source: lazarus
+    description: Contagious Interview package (published Jan 8, 2026); lib/lserver.js loader used by fake-assessment repos
+    added: "2026-10-19"
+    references:
+      - https://www.abstract.security/blog/contagious-interview-tracking-the-vs-code-tasks-infection-vector
+
+  - name: transform-jsbi-to-bigint
+    severity: critical
+    source: phantomraven
+    version: "9.9.0"
+    description: PhantomRaven remote-dynamic-dependency wave (Sept 2026); preinstall credential/CI-variable theft
+    added: "2026-10-19"
+    typosquat_of: babel-plugin-transform-jsbi-to-bigint
+    references:
+      - https://corgea.com/research/phantomraven-npm-rdd-preinstall-credential-theft-september-2026
+
+  - name: sort-imports-es6-autofix
+    severity: critical
+    source: phantomraven
+    description: PhantomRaven RDD wave (Sept 2026); no safe release — now a 0.0.1-security placeholder
+    added: "2026-10-19"
+    typosquat_of: eslint-plugin-sort-imports-es6-autofix
+    references:
+      - https://corgea.com/research/phantomraven-npm-rdd-preinstall-credential-theft-september-2026
+
+  - name: "@aifabrix/miso-client"
+    severity: critical
+    source: glassworm
+    version: "4.7.2"
+    description: GlassWorm invisible-Unicode payload (Mar 12, 2026)
+    added: "2026-10-19"
+    references:
+      - https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode

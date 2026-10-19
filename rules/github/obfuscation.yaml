@@ -60,7 +60,9 @@ rules:
     confidence: low
     pattern:
       type: regex
-      value: "new\\s+Function\\s*\\([^)]{0,200}\\)"
+      # 2026-10: Skip the two ubiquitous benign forms — `new Function()` and the
+      # globalThis polyfill `new Function("return this")`.
+      value: "new\\s+Function\\s*\\((?!\\s*\\)|\\s*['\"]return this['\"]\\s*\\))[^)]{0,200}\\)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [function-constructor, dynamic-code, obfuscation]
