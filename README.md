@@ -21,7 +21,7 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 
 ## Detection categories
 
-The repository covers **13+ detection categories**:
+The repository covers **17+ detection categories**:
 
 1. **Malware signatures** — Lazarus/BeaverTail/InvisibleFerret APT patterns
 2. **Obfuscated code** — Base64, hex strings, eval abuse, long-line attacks
@@ -36,6 +36,10 @@ The repository covers **13+ detection categories**:
 11. **Social engineering** — README urgency tactics, security bypass instructions
 12. **Non-English comments** — Detects non-English code comments (Lazarus indicator)
 13. **User profile risk** — Account age, follower patterns, activity analysis
+14. **Editor & agent auto-execution** — VS Code `folderOpen` tasks, Claude Code hooks, MCP configs, hidden agent instructions *(needs scanner-core ≥ 0.4, which scans these files)*
+15. **Loader tradecraft** — HTTP-response eval, `global['!']` markers, whitespace-padded config injection, GlassWorm invisible Unicode, blockchain dead drops
+16. **Worm & campaign IOCs** — Shai-Hulud / CHAINDROP droppers and artifacts, known 2026 C2 / payload hosts, request catchers
+17. **Paste-and-run lures** — encoded or hidden-window shell one-liners in READMEs and task files
 
 ## How Flagrix uses these rules
 
