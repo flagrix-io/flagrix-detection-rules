@@ -1,0 +1,43 @@
+name: OSV malicious-package feed
+
+# Rebuild osv-malicious.json from the official OSV dumps every night and
+# commit it only when the data changed (the file is deterministic).
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: osv-feed
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Download OSV dumps
+        run: |
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/npm.zip" https://osv-vulnerabilities.storage.googleapis.com/npm/all.zip
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/pypi.zip" https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip
+      - name: Build feed
+        run: npx tsx scripts/build-osv-feed.ts "$RUNNER_TEMP/npm.zip" "$RUNNER_TEMP/pypi.zip"
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- osv-malicious.json; then
+            echo "Feed unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add osv-malicious.json
+          git commit -m "chore: refresh OSV malicious-package feed ($(node -p 'require("./osv-malicious.json").updated.slice(0, 10)'))"
+          git push

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
-    "validate": "tsx scripts/validate.ts"
+    "validate": "tsx scripts/validate.ts",
+    "build:osv": "tsx scripts/build-osv-feed.ts"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

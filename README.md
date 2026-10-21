@@ -52,6 +52,20 @@ npm install
 npm run build
 ```
 
+### OSV malicious-package feed
+
+`osv-malicious.json` lists every npm and PyPI package that the [OpenSSF malicious-packages](https://github.com/ossf/malicious-packages) project has confirmed malicious (OSV `MAL-*` records): about 222k npm and 12k PyPI names, 5.6 MB (1.4 MB gzipped). It's far too large to embed in `signatures.json`, so it is a separate file. Scanners fetch it and match dependencies locally, so names never leave the device. `packages/malicious-npm.yaml` stays the curated list with descriptions and sources.
+
+Format: per ecosystem, `all` lists packages malicious in every version, and `versions` maps the rest to affected versions or ranges such as `>=1.0.0 <1.2.11`. PyPI names are PEP 503-normalised.
+
+The [OSV feed workflow](.github/workflows/osv-feed.yml) rebuilds it nightly from the official OSV dumps and commits only when the data changed. To build it by hand:
+
+```bash
+curl -sSfLo /tmp/npm.zip https://osv-vulnerabilities.storage.googleapis.com/npm/all.zip
+curl -sSfLo /tmp/pypi.zip https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip
+npm run build:osv -- /tmp/npm.zip /tmp/pypi.zip
+```
+
 ## Contributing
 
 Found a new malware package? Spotted a pattern not covered? See [CONTRIBUTING.md](CONTRIBUTING.md).
