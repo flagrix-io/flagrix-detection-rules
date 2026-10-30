@@ -16,34 +16,40 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 | `hashes/known-bad.yaml` | SHA-256 hashes of known malicious files |
 
 > **On file hashes:** Flagrix scanning is pattern-based (regex/YARA over source and
-> dependencies), not hash-based, so `knownBadHashes` is intentionally empty by
-> default. The field exists in the schema for consumers that want to add hash IOCs.
+> dependencies), not hash-based. `knownBadHashes` carries a few sourced IOCs
+> (Shai-Hulud / CHAINDROP payloads) for consumers that want them, but
+> scanner-core doesn't match on hashes.
 
 ## Detection categories
 
-The repository covers **17+ detection categories**:
+Together with the heuristics built into [scanner-core](https://github.com/flagrix-io/flagrix-scanner-core), Flagrix covers **22 detection categories**:
 
-1. **Malware signatures** — Lazarus/BeaverTail/InvisibleFerret APT patterns
-2. **Obfuscated code** — Base64, hex strings, eval abuse, long-line attacks
-3. **Hardcoded secrets** — AWS keys, GitHub tokens, Stripe keys, API keys
-4. **Suspicious network** — Discord webhooks, Telegram tokens, Pastebin URLs, ngrok tunnels
-5. **Data exfiltration** — Clipboard access, cookie theft, keyloggers, form data theft
-6. **Backdoors** — RCE endpoints, dynamic require, hardcoded auth bypass
-7. **Supply chain attacks** — Malicious postinstall scripts, executable downloads
-8. **Suspicious file access** — SSH/AWS credential reads, browser password DB access
-9. **Crypto mining** — CoinHive, stratum+tcp, XMRig, cryptonight patterns
-10. **Code integrity** — Minified code in source repos, missing license/README
-11. **Social engineering** — README urgency tactics, security bypass instructions
-12. **Non-English comments** — Detects non-English code comments (Lazarus indicator)
+1. **Malware signatures** — Lazarus BeaverTail / InvisibleFerret / PolinRider patterns
+2. **Obfuscated code** — Base64, hex strings, eval and `new Function` abuse, `fromCharCode` and charcode arrays, long-line attacks
+3. **Hardcoded secrets** — AWS, GitHub, Stripe, npm and AI-provider keys, private-key blocks, wallet keys, DB connection strings
+4. **Suspicious network** — Discord webhooks, Telegram tokens, Pastebin URLs, ngrok tunnels, URL shorteners, suspicious TLDs
+5. **Data exfiltration** — Clipboard access, cookie theft, keyloggers, environment variables sent to webhooks
+6. **Backdoors** — Reverse shells, RCE endpoints, dynamic require, hardcoded auth bypass
+7. **Supply chain attacks** — Install scripts that download or run code, preinstall droppers
+8. **Suspicious file access** — SSH/AWS credential reads, system files, browser password databases, macOS Keychain dumps
+9. **Crypto mining** — stratum+tcp, XMRig, cryptonight patterns
+10. **Code integrity** — Minified code in source repos, missing license/README, placeholder secrets, a Flask debugger exposed on all interfaces
+11. **Social engineering** — README urgency tactics, security bypass instructions, requests for wallet secrets
+12. **Non-English comments** — Share of comment text in other languages, shown for context only (it doesn't raise the verdict on its own)
 13. **User profile risk** — Account age, follower patterns, activity analysis
 14. **Editor & agent auto-execution** — VS Code `folderOpen` tasks, Claude Code hooks, MCP configs, hidden agent instructions *(needs scanner-core ≥ 0.4, which scans these files)*
 15. **Loader tradecraft** — HTTP-response eval, `global['!']` markers, whitespace-padded config injection, GlassWorm invisible Unicode, blockchain dead drops
 16. **Worm & campaign IOCs** — Shai-Hulud / CHAINDROP droppers and artifacts, known 2026 C2 / payload hosts, request catchers
 17. **Paste-and-run lures** — encoded or hidden-window shell one-liners in READMEs and task files
+18. **Malicious dependencies** — npm and PyPI packages from the curated list and the OSV feed below, matched version-aware against `package.json`, `requirements.txt`, `setup.py` and `Pipfile`
+19. **Typosquats** — dependency names one or two edits away from popular npm packages (checked against npm download counts to cut false alarms)
+20. **Git-history signals** — backdated pushes and recent force pushes
+21. **Disguised files** — JavaScript posing as font files, suspicious hidden files
+22. **CI workflow abuse** — GitHub Actions steps that dump repository secrets
 
 ## How Flagrix uses these rules
 
-The Flagrix extension fetches `signatures.json` from this repository every 6 hours. When you scan a GitHub repository or user profile, the extension matches your target against these rules locally in your browser — no data leaves your machine.
+The Flagrix extension fetches `signatures.json` from this repository every 6 hours. When you scan a GitHub repository or user profile, the extension matches your target against these rules locally in your browser. Nothing is sent to a Flagrix server.
 
 The `signatures.json` is compiled from the rule, package, and hash YAML files by running:
 
