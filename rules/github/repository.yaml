@@ -364,8 +364,11 @@ rules:
     tags: [backdoor, rce, dynamic-require]
 
   - id: BACKDOOR_HARDCODED_AUTH
-    name: Hardcoded Auth Bypass
-    description: Hardcoded password check — always-true backdoor condition in auth logic
+    name: Hardcoded Password Comparison
+    description: >-
+      Password or auth value compared against a hardcoded string literal
+      (e.g. password == "admin123") — a pattern backdoors use, but also common
+      in tests, examples and placeholder checks
     severity: medium
     confidence: low
     pattern:
