@@ -214,7 +214,20 @@ rules:
     confidence: medium
     pattern:
       type: regex
-      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
+      # The lookbehind skips Algolia DocSearch keys. A docs site's `algolia`
+      # block carries a search-only key that Algolia documents as safe to
+      # commit, so it is published data rather than a leaked credential — the
+      # same reasoning that exempts AWS's documented example key. It flagged
+      # the Docusaurus config of reduxjs/redux, reduxjs/redux-toolkit,
+      # prettier/prettier and puppeteer/puppeteer, taking redux to MEDIUM on
+      # the benchmark's clean reference corpus. A key that merely sits near an
+      # algolia block still matches: the window looks backwards only.
+      #
+      # It sits after the key-name alternation on purpose. A lookbehind at the
+      # start is evaluated at every position in the file and cost 23ms per
+      # 1.9MB against 2ms; here it runs only once the key name has matched,
+      # and measures at 1ms.
+      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)(?<!algolia[\\s\\S]{0,300})\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [secrets, credentials, api-key]
 
@@ -995,13 +1008,29 @@ rules:
     name: Compose Service Mounts the Docker Socket
     description: >
       A service with /var/run/docker.sock controls the host daemon — container
-      escape by design. Traefik, Portainer and Watchtower do this legitimately,
-      so it is a review signal, not a verdict.
+      escape by design. A service whose image is Traefik, Portainer, Watchtower
+      or a socket proxy is skipped: the mount is how those tools work at all.
     severity: high
     confidence: medium
     pattern:
       type: regex
-      value: "(?:^|\\n)[ \\t]*(?:-[ \\t]+[\\\"']?|source:[ \\t]*[\\\"']?)(?:\\/var)?\\/run\\/docker\\.sock"
+      # The lookbehind skips the orchestrators this rule's own description
+      # named as legitimate. It flagged socketio/socket.io's
+      # examples/cluster-traefik/docker-compose.yml, which is the textbook
+      # Traefik service-discovery setup (`image: traefik:2.4`, two lines
+      # above the mount), at high severity on the benchmark's clean reference
+      # corpus — the rule called itself "a review signal, not a verdict"
+      # while scoring like a verdict.
+      #
+      # The window looks backwards from the mount, so it only covers the
+      # service block the mount belongs to: a service further down the file
+      # that mounts the socket still matches, even when a legitimate Traefik
+      # service appears above it. A service that declares its image *after*
+      # its volumes also still matches, which fails toward alerting.
+      #
+      # It sits at the end so it is evaluated only on a full match, not at
+      # every position in the file.
+      value: "(?:^|\\n)[ \\t]*(?:-[ \\t]+[\\\"']?|source:[ \\t]*[\\\"']?)(?:\\/var)?\\/run\\/docker\\.sock(?<!image:[ \\t]*[\\\"']?[\\w./-]*(?:traefik|portainer|watchtower|docker-socket-proxy)[\\s\\S]{0,300})"
       file_extensions: [".compose.yml"]
     tags: [docker, compose, privilege-escalation]
 
