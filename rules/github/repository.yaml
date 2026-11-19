@@ -214,7 +214,20 @@ rules:
     confidence: medium
     pattern:
       type: regex
-      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
+      # The lookbehind skips Algolia DocSearch keys. A docs site's `algolia`
+      # block carries a search-only key that Algolia documents as safe to
+      # commit, so it is published data rather than a leaked credential — the
+      # same reasoning that exempts AWS's documented example key. It flagged
+      # the Docusaurus config of reduxjs/redux, reduxjs/redux-toolkit,
+      # prettier/prettier and puppeteer/puppeteer, taking redux to MEDIUM on
+      # the benchmark's clean reference corpus. A key that merely sits near an
+      # algolia block still matches: the window looks backwards only.
+      #
+      # It sits after the key-name alternation on purpose. A lookbehind at the
+      # start is evaluated at every position in the file and cost 23ms per
+      # 1.9MB against 2ms; here it runs only once the key name has matched,
+      # and measures at 1ms.
+      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)(?<!algolia[\\s\\S]{0,300})\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [secrets, credentials, api-key]
 

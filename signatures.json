@@ -1,6 +1,6 @@
 {
-  "version": "2026.11.18.001",
-  "lastUpdated": "2026-11-18T14:13:43.540Z",
+  "version": "2026.11.19.001",
+  "lastUpdated": "2026-11-19T19:41:48.041Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -574,7 +574,7 @@
     {
       "id": "HARDCODED_API_KEY",
       "name": "Hardcoded API Key",
-      "pattern": "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]",
+      "pattern": "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)(?<!algolia[\\s\\S]{0,300})\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]",
       "description": "Generic API key / secret key pattern assigned to a variable (obvious placeholders are downgraded by scanner context)",
       "tags": [
         "secrets",
