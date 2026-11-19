@@ -1,6 +1,6 @@
 {
   "version": "2026.11.19.001",
-  "lastUpdated": "2026-11-19T19:41:48.041Z",
+  "lastUpdated": "2026-11-19T19:52:49.445Z",
   "maliciousPackages": [
     {
       "name": "beavertail",
@@ -1770,8 +1770,8 @@
     {
       "id": "COMPOSE_DOCKER_SOCKET_MOUNT",
       "name": "Compose Service Mounts the Docker Socket",
-      "pattern": "(?:^|\\n)[ \\t]*(?:-[ \\t]+[\\\"']?|source:[ \\t]*[\\\"']?)(?:\\/var)?\\/run\\/docker\\.sock",
-      "description": "A service with /var/run/docker.sock controls the host daemon — container escape by design. Traefik, Portainer and Watchtower do this legitimately, so it is a review signal, not a verdict.\n",
+      "pattern": "(?:^|\\n)[ \\t]*(?:-[ \\t]+[\\\"']?|source:[ \\t]*[\\\"']?)(?:\\/var)?\\/run\\/docker\\.sock(?<!image:[ \\t]*[\\\"']?[\\w./-]*(?:traefik|portainer|watchtower|docker-socket-proxy)[\\s\\S]{0,300})",
+      "description": "A service with /var/run/docker.sock controls the host daemon — container escape by design. A service whose image is Traefik, Portainer, Watchtower or a socket proxy is skipped: the mount is how those tools work at all.\n",
       "tags": [
         "docker",
         "compose",
