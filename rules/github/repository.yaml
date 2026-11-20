@@ -1075,18 +1075,43 @@ rules:
       file_extensions: [".compose.yml"]
     tags: [docker, compose, download-exec]
 
-  - id: DEVCONTAINER_COMMAND_DOWNLOAD_EXEC
-    name: Devcontainer Lifecycle Command Pipes a Download into a Shell
+  - id: DEVCONTAINER_INITIALIZE_DOWNLOAD_EXEC
+    name: Devcontainer initializeCommand Pipes a Download into a Shell
     description: >
-      initializeCommand runs on the host and onCreate/postCreateCommand run as soon
-      as the editor opens the folder — the devcontainer form of the
-      Contagious Interview task file. CONFIG_COMMAND_DOWNLOAD_EXEC only covers
-      the "command" key, which these configs do not use.
+      initializeCommand is the one devcontainer lifecycle hook that runs on the
+      HOST, before any container exists — the devcontainer form of the
+      Contagious Interview task file, with the same reach as a VS Code
+      folderOpen task. CONFIG_COMMAND_DOWNLOAD_EXEC only covers the "command"
+      key, which these configs do not use.
     severity: critical
     confidence: high
     pattern:
       type: regex
-      value: "\\\"(?:initialize|onCreate|updateContent|postCreate|postStart|postAttach)Command\\\"[ \\t]*:[\\s\\S]{0,300}?(?:\\bcurl\\b|\\bwget\\b|\\biwr\\b|Invoke-WebRequest|Invoke-RestMethod)[\\s\\S]{0,300}?\\|[ \\t]*(?:sudo[ \\t]+)?(?:(?:ba|z)?sh|cmd|iex|powershell|pwsh|python3?|node)\\b"
+      # The span may not cross into another lifecycle key's value, or a
+      # benign initializeCommand would inherit the severity of a
+      # curl-into-shell sitting in the postCreateCommand below it.
+      value: "\\\"initializeCommand\\\"[ \\t]*:(?:(?!Command\\\")[\\s\\S]){0,300}?(?:\\bcurl\\b|\\bwget\\b|\\biwr\\b|Invoke-WebRequest|Invoke-RestMethod)(?:(?!Command\\\")[\\s\\S]){0,300}?\\|[ \\t]*(?:sudo[ \\t]+)?(?:(?:ba|z)?sh|cmd|iex|powershell|pwsh|python3?|node)\\b"
+      file_extensions: [".json"]
+      file_names: ["devcontainer.json", ".devcontainer.json"]
+    tags: [devcontainer, auto-exec, download, contagious-interview, host]
+
+  - id: DEVCONTAINER_COMMAND_DOWNLOAD_EXEC
+    name: Devcontainer Container Lifecycle Command Pipes a Download into a Shell
+    description: >
+      onCreate/updateContent/postCreate/postStart/postAttachCommand pipe a
+      download into a shell. These run INSIDE the container, so unlike
+      initializeCommand they cannot reach the host's SSH keys, cloud
+      credentials or browser profiles — but they still run unprompted on the
+      mounted workspace, with whatever credentials the editor forwards.
+      Bootstrapping a toolchain this way is common and legitimate, so this is
+      high rather than critical; the host variant is
+      DEVCONTAINER_INITIALIZE_DOWNLOAD_EXEC.
+    severity: high
+    confidence: high
+    pattern:
+      type: regex
+      # As above: the span may not cross into another lifecycle key's value.
+      value: "\\\"(?:onCreate|updateContent|postCreate|postStart|postAttach)Command\\\"[ \\t]*:(?:(?!Command\\\")[\\s\\S]){0,300}?(?:\\bcurl\\b|\\bwget\\b|\\biwr\\b|Invoke-WebRequest|Invoke-RestMethod)(?:(?!Command\\\")[\\s\\S]){0,300}?\\|[ \\t]*(?:sudo[ \\t]+)?(?:(?:ba|z)?sh|cmd|iex|powershell|pwsh|python3?|node)\\b"
       file_extensions: [".json"]
       file_names: ["devcontainer.json", ".devcontainer.json"]
     tags: [devcontainer, auto-exec, download, contagious-interview]

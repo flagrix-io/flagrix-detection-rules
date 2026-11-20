@@ -13,7 +13,18 @@ rules:
     confidence: low
     pattern:
       type: regex
-      value: "[A-Za-z0-9+/]{50,}={0,2}"
+      # A 50-character run of base64 characters is not by itself base64: `/`
+      # is in the alphabet, so module paths qualify, as does any long
+      # camelCase identifier. React matched on names like
+      # `clientRenderedSuspenseBoundaryErrorAttrInterstitial` and paths like
+      # `compiler/src/HIR/MergeOverlappingReactiveScopesHIR`.
+      #
+      # Encoded bytes carry digits; identifiers and paths rarely do. Require
+      # one in the first 50 characters — base64 of arbitrary data contains a
+      # digit over that span 99.3% of the time. The leading class excludes
+      # digits, which keeps the lookahead a single bounded scan rather than a
+      # backtracking one, so it stays linear over long encoded blobs.
+      value: "(?=[A-Za-z+/]{0,49}\\d)[A-Za-z0-9+/]{50,}={0,2}"
       min_matches: 6
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".sh", ".ps1", ".psm1"]
     skip_test_files: true
@@ -22,14 +33,23 @@ rules:
   - id: OBF_HEX_STRINGS
     name: Extensive Hex-Encoded Strings
     description: >
-      20+ hex escape sequences (\xNN) in a single file. Hex encoding hides the actual
-      string content from developers, often used to conceal URLs, commands, or shellcode.
+      10+ runs of differing hex escape sequences (\xNN) in a single file. Hex encoding
+      hides the actual string content from developers, often used to conceal URLs,
+      commands, or shellcode.
     severity: medium
     confidence: low
     pattern:
       type: regex
-      value: "\\\\x[0-9a-fA-F]{2}"
-      min_matches: 20
+      # Counting escapes alone counts padding: React's performance-track code
+      # holds 27 copies of `\xa0`, a non-breaking space, and was reported as
+      # hex-obfuscated. What hides a string is a sequence of differing escapes
+      # (`\x66\x75\x6e\x63`), so match an adjacent pair that differs, which
+      # a homogeneous run cannot produce.
+      #
+      # Each match consumes two escapes, so the threshold halves to hold the
+      # old sensitivity: the 32-escape reference sample yields 16.
+      value: "\\\\x([0-9a-fA-F]{2})\\\\x(?!\\1)[0-9a-fA-F]{2}"
+      min_matches: 10
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php"]
     skip_test_files: true
     tags: [hex-encoding, obfuscation]
@@ -46,7 +66,20 @@ rules:
       # Requires a non-empty argument: malicious eval always evaluates
       # something, while bare "eval()" appears in prose (docs, error messages,
       # security tooling) and must not fire.
-      value: "eval\\s*\\(\\s*[^)\\s][^)]{0,200}\\)"
+      #
+      # Two further ways it fired on code that evaluates nothing:
+      #
+      # `(?<![\w.$])` — the name has to be `eval` itself, not merely end in
+      # it. Without it, any method spelled `...eval(` matched: React's
+      # `inspectedWindow.eval(code)` devtools bridge, date-fns'
+      # `dom.window.eval(...)` in its CDN examples, and identifiers such as
+      # `doEval(` / `runEval(`, the pattern being case-insensitive.
+      #
+      # `[ \t]*` rather than `\s*`, so a newline cannot bridge the gap. React
+      # describes eval in a multi-line error string ("React requires eval() in
+      # development mode...") and `\s*` let that prose `eval` join a `(`
+      # several lines below into one match.
+      value: "(?<![\\w.$])eval[ \\t]*\\(\\s*[^)\\s][^)]{0,200}\\)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     skip_test_files: true
     tags: [eval, dynamic-code, obfuscation]
