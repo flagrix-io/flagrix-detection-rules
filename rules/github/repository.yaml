@@ -227,7 +227,12 @@ rules:
       # start is evaluated at every position in the file and cost 23ms per
       # 1.9MB against 2ms; here it runs only once the key name has matched,
       # and measures at 1ms.
-      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)(?<!algolia[\\s\\S]{0,300})\\s*[:=]\\s*['\"]([^'\"]{20,})['\"]"
+      #
+      # 2026-11: The value is one literal on one line. Letting it span lines
+      # let a closing quote open the "value": vscode's copilot setup script
+      # filters `.startsWith('GITHUB_OAUTH_TOKEN=')`, and `AUTH_TOKEN=` then
+      # matched through to a quote on the next line.
+      value: "(?:api[_-]?key|apikey|secret[_-]?key|auth[_-]?token|private[_-]?key)(?<!algolia[\\s\\S]{0,300})\\s*[:=]\\s*['\"]([^'\"\\n]{20,})['\"]"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go"]
     tags: [secrets, credentials, api-key]
 
@@ -238,7 +243,9 @@ rules:
     confidence: medium
     pattern:
       type: regex
-      value: "(?:mongodb|mongo)[+:\\/\\/]{0,6}[^@\\s]+:[^@\\s]+@|postgres:\\/\\/[^@\\s]+:[^@\\s]+@"
+      # 2026-11: Not in a comment. A connection string in a doc comment is an
+      # example of the format (bun-types' "`postgres://user:pass@localhost:5432/mydb`").
+      value: "(?:(?:mongodb|mongo)[+:\\/\\/]{0,6}[^@\\s]+:[^@\\s]+@|postgres:\\/\\/[^@\\s]+:[^@\\s]+@)(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".env"]
     tags: [secrets, database, credentials]
 
@@ -274,7 +281,10 @@ rules:
       type: regex
       # 2026-10: Add JSON-storage hosts used for Contagious Interview payloads (jsonkeeper,
       # jsonsilo, npoint) and other paste hosts.
-      value: "(?<![\\w-])(?:www\\.)?(?:pastebin\\.com|hastebin\\.com|paste\\.ee|rentry\\.(?:co|org)|paste\\.rs|jsonkeeper\\.com|jsonsilo\\.com|api\\.npoint\\.io|(?:api\\.)?jsonbin\\.io)\\/[a-zA-Z0-9]+"
+      # 2026-11: Not on a comment line or after a trailing comment marker. A link in a
+      # comment is documentation, not a destination the code contacts: ansible's
+      # "http://pastebin.com/…" citation in a comment.
+      value: "(?<![\\w-])(?:www\\.)?(?:pastebin\\.com|hastebin\\.com|paste\\.ee|rentry\\.(?:co|org)|paste\\.rs|jsonkeeper\\.com|jsonsilo\\.com|api\\.npoint\\.io|(?:api\\.)?jsonbin\\.io)\\/[a-zA-Z0-9]+(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1", ".json"]
     tags: [network, pastebin, payload-hosting]
 
@@ -286,7 +296,11 @@ rules:
       type: regex
       # 2026-10: `t\.co/` matched inside longer hosts (no left boundary). Add shorteners
       # seen in 2026 task-file lures (short.gy etc.).
-      value: "(?<![\\w.-])(?:bit\\.ly|tinyurl\\.com|t\\.co|short\\.gy|is\\.gd|cutt\\.ly|rebrand\\.ly|shorturl\\.at|tiny\\.cc|rb\\.gy|t\\.ly)\\/[a-zA-Z0-9]+"
+      # 2026-11: Not on a comment line or after a trailing comment marker. A link in a
+      # comment is documentation, not a destination the code contacts: CRA's
+      # "Learn more: https://bit.ly/CRA-PWA", ansible's "for-else: http://bit.ly/…",
+      # V8's tiny.cc spec link, cpython's tcl.tk (.tk) doc links.
+      value: "(?<![\\w.-])(?:bit\\.ly|tinyurl\\.com|t\\.co|short\\.gy|is\\.gd|cutt\\.ly|rebrand\\.ly|shorturl\\.at|tiny\\.cc|rb\\.gy|t\\.ly)\\/[a-zA-Z0-9]+(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1", ".json"]
     tags: [network, url-shortener, obfuscation]
 
@@ -300,7 +314,10 @@ rules:
       # 2026-10: Only matched single-label hosts followed by '/' or EOL (missed
       # sub.evil.xyz, evil.xyz:8080, quoted URLs). Adds abused TLDs; .xyz alone is too
       # common for high.
-      value: "https?:\\/\\/(?:[a-zA-Z0-9-]+\\.)+(?:tk|ml|ga|cf|gq|onion|xyz|top|icu|cfd|sbs|cyou|buzz|rest|zip|mov)(?=[\\/:?#\"'\\x60\\s)]|$)"
+      # 2026-11: Not on a comment line or after a trailing comment marker. A link in a
+      # comment is documentation, not a destination the code contacts: cpython's
+      # links to the Tcl/Tk manual at tcl.tk.
+      value: "https?:\\/\\/(?:[a-zA-Z0-9-]+\\.)+(?:tk|ml|ga|cf|gq|onion|xyz|top|icu|cfd|sbs|cyou|buzz|rest|zip|mov)(?=[\\/:?#\"'\\x60\\s)]|$)(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".py", ".rb", ".php", ".go", ".sh", ".ps1", ".psm1", ".json"]
     tags: [network, suspicious-domain, malware-hosting]
 
@@ -331,12 +348,17 @@ rules:
 
   - id: EXFIL_COOKIE
     name: Cookie Access
-    description: Reads browser cookies via document.cookie — can steal session tokens
+    description: Reads document.cookie next to a network call — can send session tokens off the page
     severity: medium
     confidence: medium
     pattern:
       type: regex
-      value: "document\\.cookie"
+      # 2026-11: A read, not a write, outside comments, with a network sink within
+      # 1000 characters either side. Setting a cookie (`document.cookie = …`, next's
+      # HMR hash), mentioning it in a doc comment (every cookie library's httpOnly
+      # note), or reading it for the page's own UI (playwright's trace viewer) is
+      # not theft; sending it somewhere is.
+      value: "(?:fetch\\s*\\(|sendBeacon\\s*\\(|XMLHttpRequest|new\\s+Image\\b|\\baxios\\b|new\\s+WebSocket\\b|\\$\\.(?:post|ajax|get)\\s*\\()[\\s\\S]{0,1000}?document\\.cookie(?!\\s*=(?!=))(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)|document\\.cookie(?!\\s*=(?!=))(?<!(?:(?:^|\\n)[ \\t]*(?:\\/?\\*|\\/\\/|#)|[ \\t](?:\\/\\/|#))[^\\n]*)[\\s\\S]{0,1000}?(?:fetch\\s*\\(|sendBeacon\\s*\\(|XMLHttpRequest|new\\s+Image\\b|\\baxios\\b|new\\s+WebSocket\\b|\\$\\.(?:post|ajax|get)\\s*\\()"
       file_extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
     tags: [exfiltration, cookies, session-theft]
 
