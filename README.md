@@ -8,7 +8,7 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 
 | Path | Contents |
 |------|----------|
-| `rules/github/repository.yaml` | YARA-style patterns: malware signatures, hardcoded secrets, backdoors, network exfiltration, social engineering, container and devcontainer auto-execution |
+| `rules/github/repository.yaml` | YARA-style patterns: malware signatures, hardcoded secrets, backdoors, network exfiltration, social engineering, container, devcontainer and git hook auto-execution |
 | `rules/github/obfuscation.yaml` | Obfuscation technique detection (base64, hex, long lines, eval abuse) |
 | `rules/github/user-profile.yaml` | Risk scoring weights + thresholds for GitHub account analysis (compiled into `userProfileRules`, consumed live by the scanner) |
 | `packages/malicious-npm.yaml` | Confirmed malicious npm packages (Lazarus Group, typosquats) |
@@ -22,7 +22,7 @@ Identify malicious code, supply chain attacks, scam patterns, and suspicious Git
 
 ## Detection categories
 
-Together with the heuristics built into [scanner-core](https://github.com/flagrix-io/flagrix-scanner-core), Flagrix covers **23 detection categories**:
+Together with the heuristics built into [scanner-core](https://github.com/flagrix-io/flagrix-scanner-core), Flagrix covers **24 detection categories**:
 
 1. **Malware signatures** — Lazarus BeaverTail / InvisibleFerret / PolinRider patterns
 2. **Obfuscated code** — Base64, hex strings, eval and `new Function` abuse, `fromCharCode` and charcode arrays, long-line attacks
@@ -47,6 +47,7 @@ Together with the heuristics built into [scanner-core](https://github.com/flagri
 21. **Disguised files** — JavaScript posing as font files, suspicious hidden files
 22. **CI workflow abuse** — GitHub Actions steps that dump repository secrets
 23. **Container & devcontainer auto-execution** — devcontainer lifecycle commands that download and run code, container builds that execute disguised assets, compose services that mount the Docker socket or the host filesystem, drop isolation, or fetch their command from the network *(needs scanner-core ≥ 0.7, which reads these files)*
+24. **Git hook auto-execution** — install scripts that point `core.hooksPath` at a folder in the repo, and committed hooks (`.githooks/`, `.husky/`, or that folder) that download and run a script *(needs scanner-core ≥ 0.10, which reads these files)*
 
 ## How Flagrix uses these rules
 

@@ -1167,6 +1167,50 @@ rules:
       file_names: ["devcontainer.json", ".devcontainer.json"]
     tags: [devcontainer, privilege-escalation, credential-access]
 
+  # ── Git Hooks ─────────────────────────────────────────────────────────────────
+  # Needs scanner-core ≥ 0.10, which reads committed hooks (.githooks/<hook>,
+  # .husky/<hook>, and the folder a package.json script points core.hooksPath
+  # at) and scopes them as `.githook.sh`. Every `.sh` rule applies to them too.
+
+  - id: GIT_HOOKS_PATH_SET_ON_INSTALL
+    name: Install Script Switches On the Repo's Own Git Hooks
+    description: >
+      A prepare/install script runs `git config core.hooksPath <folder in the
+      repo>`, so `npm install` makes every later `git commit`, `git push` or
+      `git checkout` run the files committed there, on the host and without a
+      prompt. Plenty of projects do this on purpose to share lint hooks, so on
+      its own it is a low-confidence review signal: read the hooks it turns on.
+      GIT_HOOK_DOWNLOAD_EXEC flags the malicious form. Husky's own
+      `prepare: husky` does not match.
+    severity: medium
+    confidence: low
+    pattern:
+      type: regex
+      # Only a path inside the repo: resetting to .git/hooks, a parent folder
+      # or an absolute / ~ / $HOME path does not run a committed file.
+      value: "\"(?:(?:pre|post)?(?:install|prepare)|prepublish)\"\\s*:\\s*\"(?:[^\"\\\\]|\\\\.){0,300}?\\bgit\\s+config\\s+(?:-{1,2}[\\w-]+\\s+)*core\\.hooksPath\\s+(?:\\\\\"|')?(?!\\.git\\/|\\.\\.)[\\w.]"
+      file_extensions: [".json"]
+      file_names: ["package.json"]
+    tags: [git-hooks, auto-exec, install-script, contagious-interview]
+
+  - id: GIT_HOOK_DOWNLOAD_EXEC
+    name: Git Hook Pipes a Download into a Shell
+    description: >
+      A committed git hook (pre-commit, pre-push, post-checkout...) that
+      downloads a script and runs it: `curl ... | sh`, `bash <(curl ...)`,
+      `sh -c "$(curl ...)"`. Once core.hooksPath points at it, it runs on the
+      host on every commit, with the same reach as a VS Code folderOpen task;
+      the remote script can change at any time. Hooks that lint, test or
+      format run local tools and do not match.
+    severity: critical
+    confidence: high
+    pattern:
+      type: regex
+      # Commented-out lines (`# install with: curl ... | sh`) do not match.
+      value: "(?:^|\\n)(?![ \\t]*#)[^\\n]{0,200}?(?:\\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\\b[^\\n|]{0,300}\\|[ \\t]*(?:sudo[ \\t]+)?(?:(?:ba|z|da)?sh|python3?|node|perl|iex|powershell|pwsh)\\b|\\b(?:ba|z)?sh[ \\t]+(?:-c[ \\t]+)?[\"']?(?:\\$\\(|<\\()[ \\t]*(?:curl|wget)\\b)"
+      file_extensions: [".githook.sh"]
+    tags: [git-hooks, auto-exec, download-exec, contagious-interview]
+
   - id: PASTE_RUN_UNTRUSTED_HOST
     name: Docs Tell You to Pipe a Paste Site into a Shell
     description: >
